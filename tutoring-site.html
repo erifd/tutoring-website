@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrightMind Tutoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #FAF7F2; --ink: #1A1510; --warm-mid: #8C7B6E;
+      --accent: #C45E2A; --accent-light: #F5E4D8; --accent-dark: #8B3F1A;
+      --white: #FFFFFF; --border: rgba(26,21,16,0.12); --section-gap: 7rem;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); font-size: 16px; line-height: 1.7; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; width: 100%; z-index: 200; background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 5vw; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+    .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--warm-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta { background: var(--ink) !important; color: var(--cream) !important; padding: 0.5rem 1.2rem; border-radius: 100px; }
+    .nav-cta:hover { background: var(--accent) !important; color: var(--white) !important; }
+    #nav-login-btn { background: none; border: 1.5px solid var(--border); color: var(--ink); padding: 0.45rem 1.1rem; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    #nav-login-btn:hover { border-color: var(--ink); background: var(--ink); color: var(--cream); }
+    #nav-user-pill { display: none; align-items: center; gap: 8px; background: var(--accent-light); color: var(--accent-dark); border-radius: 100px; padding: 0.35rem 1rem 0.35rem 0.5rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
+    #nav-user-pill .pill-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; }
+
+    /* LOGIN MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,21,16,0.5); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: var(--white); border-radius: 24px; padding: 2.5rem; width: 420px; max-width: 90vw; position: relative; animation: modalIn 0.25s ease; }
+    @keyframes modalIn { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-close { position: absolute; top: 1.2rem; right: 1.4rem; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--warm-mid); line-height: 1; }
+    .modal-close:hover { color: var(--ink); }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .modal-sub { font-size: 0.9rem; color: var(--warm-mid); margin-bottom: 1.8rem; }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-field label { font-size: 0.82rem; font-weight: 500; display: block; margin-bottom: 0.35rem; }
+    .modal-field input { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
+    .modal-field input:focus { border-color: var(--accent); background: var(--white); }
+    .modal-error { font-size: 0.82rem; color: #C0392B; margin-top: 0.3rem; display: none; }
+    .modal-btn { width: 100%; background: var(--accent); color: var(--white); border: none; padding: 0.85rem; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s; }
+    .modal-btn:hover { background: var(--accent-dark); }
+    .modal-note { font-size: 0.78rem; color: var(--warm-mid); text-align: center; margin-top: 1rem; }
+    .modal-note a { color: var(--accent); text-decoration: none; }
+
+    /* DASHBOARD MODAL */
+    .dash-box { background: var(--cream); border-radius: 24px; padding: 0; width: 680px; max-width: 94vw; max-height: 88vh; overflow-y: auto; position: relative; animation: modalIn 0.25s ease; }
+    .dash-header { background: var(--ink); border-radius: 24px 24px 0 0; padding: 1.8rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .dash-header-left { display: flex; align-items: center; gap: 14px; }
+    .dash-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: var(--accent); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 600; }
+    .dash-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--cream); font-weight: 700; }
+    .dash-role { font-size: 0.8rem; color: rgba(250,247,242,0.55); }
+    .dash-close { background: none; border: none; color: rgba(250,247,242,0.6); font-size: 1.3rem; cursor: pointer; line-height: 1; }
+    .dash-close:hover { color: var(--cream); }
+    .dash-body { padding: 1.8rem 2rem; }
+    .dash-section-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-mid); margin-bottom: 1rem; }
+    .dash-classes { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 2rem; }
+    .class-row { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .class-info { display: flex; align-items: center; gap: 12px; }
+    .class-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-live { background: #34D399; }
+    .dot-soon { background: #FBBF24; }
+    .dot-later { background: #CBD5E1; }
+    .class-name { font-size: 0.95rem; font-weight: 500; }
+    .class-time { font-size: 0.8rem; color: var(--warm-mid); }
+    .join-btn { background: var(--accent); color: var(--white); border: none; padding: 0.5rem 1.2rem; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s; white-space: nowrap; }
+    .join-btn:hover { background: var(--accent-dark); transform: scale(1.03); }
+    .join-btn.soon { background: var(--cream); color: var(--warm-mid); border: 1px solid var(--border); cursor: default; }
+    .join-btn.soon:hover { background: var(--cream); transform: none; }
+    .dash-grades { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+    .grade-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; }
+    .grade-subject { font-size: 0.75rem; color: var(--warm-mid); margin-bottom: 4px; }
+    .grade-num { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; line-height: 1; }
+    .grade-bar { height: 4px; border-radius: 2px; background: var(--accent-light); margin-top: 8px; overflow: hidden; }
+    .grade-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+    .grade-num.high { color: #1A7A4A; }
+    .grade-num.mid { color: #B45309; }
+    .grade-num.low { color: #B91C1C; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--warm-mid); padding: 0.5rem 1.2rem; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+    .logout-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* HERO */
+    .hero-wrap { max-width: 1200px; margin: 0 auto; padding: 0 5vw; }
+    #hero { min-height: 100vh; padding-top: 64px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; }
+    .hero-text { padding-top: 4rem; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-light); color: var(--accent-dark); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.35rem 0.9rem; border-radius: 100px; margin-bottom: 1.5rem; }
+    .hero-tag::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+    h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.6rem, 5vw, 4rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1.5rem; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .hero-desc { font-size: 1.05rem; color: var(--warm-mid); max-width: 440px; margin-bottom: 2.5rem; }
+    .hero-btns { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary { background: var(--accent); color: var(--white); padding: 0.85rem 2rem; border-radius: 100px; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: background 0.2s, transform 0.15s; display: inline-block; }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-ghost { color: var(--ink); text-decoration: none; font-weight: 500; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px; transition: gap 0.2s; }
+    .btn-ghost:hover { gap: 10px; }
+    .btn-ghost::after { content: '→'; }
+    .hero-stats { display: flex; gap: 2.5rem; margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; }
+    .stat-label { font-size: 0.82rem; color: var(--warm-mid); margin-top: 2px; }
+    .hero-visual { position: relative; display: flex; align-items: center; justify-content: center; padding-top: 4rem; }
+    .hero-card-main { background: var(--white); border-radius: 24px; border: 1px solid var(--border); padding: 2rem; width: 320px; box-shadow: 0 20px 60px rgba(26,21,16,0.08); animation: floatUp 6s ease-in-out infinite; }
+    @keyframes floatUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .card-subject-badge { display: inline-block; background: var(--accent-light); color: var(--accent-dark); font-size: 0.75rem; font-weight: 500; padding: 0.25rem 0.75rem; border-radius: 100px; margin-bottom: 1rem; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .card-tutor { display: flex; align-items: center; gap: 10px; margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--border); }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; }
+    .avatar-a { background: #E8D5F5; color: #6B3FA0; }
+    .tutor-name { font-size: 0.85rem; font-weight: 500; }
+    .tutor-sub { font-size: 0.75rem; color: var(--warm-mid); }
+    .stars { color: #E0A430; font-size: 0.8rem; letter-spacing: 1px; }
+    .floating-chip { position: absolute; background: var(--white); border: 1px solid var(--border); border-radius: 100px; padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 500; box-shadow: 0 8px 24px rgba(26,21,16,0.07); white-space: nowrap; }
+    .chip-1 { top: 4.5rem; right: -2rem; animation: floatUp 5s 1s ease-in-out infinite; }
+    .chip-2 { bottom: 4rem; left: -2rem; animation: floatUp 7s 2s ease-in-out infinite; }
+    .chip-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .dot-green { background: #34D399; }
+    .dot-blue { background: #60A5FA; }
+
+    /* MARQUEE */
+    .subjects-bar { background: var(--ink); padding: 1rem 0; overflow: hidden; margin-top: 2rem; }
+    .marquee-track { display: flex; gap: 2rem; animation: marquee 20s linear infinite; width: max-content; }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .marquee-item { font-size: 0.85rem; font-weight: 500; color: rgba(250,247,242,0.5); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+    .marquee-item span { color: var(--accent); margin: 0 1rem; }
+
+    /* SECTIONS */
+    section { padding: var(--section-gap) 5vw; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-tag { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 1rem; }
+    .section-desc { font-size: 1.05rem; color: var(--warm-mid); max-width: 520px; margin-bottom: 3.5rem; }
+
+    /* SERVICES */
+    #services { background: var(--white); }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .service-card { border: 1px solid var(--border); border-radius: 20px; padding: 2rem; background: var(--cream); transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; cursor: default; }
+    .service-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(26,21,16,0.08); border-color: rgba(196,94,42,0.3); }
+    .service-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1.2rem; }
+    .icon-math { background: #FEF3C7; } .icon-science { background: #D1FAE5; } .icon-lang { background: #DBEAFE; }
+    .icon-test { background: #F3E8FF; } .icon-code { background: #E0F2FE; }
+    .service-name { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .service-desc { font-size: 0.9rem; color: var(--warm-mid); line-height: 1.6; }
+    .service-price { margin-top: 1.2rem; font-size: 0.88rem; font-weight: 500; color: var(--accent); }
+
+    /* COURSES */
+    #courses { background: var(--ink); }
+    #courses .section-tag { color: var(--accent-light); }
+    #courses h2 { color: var(--cream); }
+    #courses .section-desc { color: rgba(250,247,242,0.55); }
+    .courses-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.5rem; }
+    .course-card { background: rgba(250,247,242,0.05); border: 1px solid rgba(250,247,242,0.1); border-radius: 20px; overflow: hidden; transition: transform 0.25s, border-color 0.25s; }
+    .course-card:hover { transform: translateY(-4px); border-color: rgba(196,94,42,0.5); }
+    .course-thumb { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; }
+    .course-thumb-math { background: linear-gradient(135deg, #1e3a5f, #2d6a9f); }
+    .course-thumb-sci  { background: linear-gradient(135deg, #1a4731, #2a7a50); }
+    .course-thumb-sat  { background: linear-gradient(135deg, #4a1a6b, #8b3fa0); }
+    .course-thumb-cs   { background: linear-gradient(135deg, #1a3a5f, #1a6b8b); }
+    .course-play { position: absolute; bottom: 12px; right: 14px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 100px; padding: 4px 12px; font-size: 0.72rem; font-weight: 500; color: #fff; }
+    .course-badge { position: absolute; top: 10px; left: 12px; background: var(--accent); color: var(--white); font-size: 0.68rem; font-weight: 500; padding: 2px 9px; border-radius: 100px; }
+    .course-body { padding: 1.2rem 1.4rem 1.5rem; }
+    .course-meta { display: flex; gap: 0.8rem; margin-bottom: 0.6rem; }
+    .course-tag { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(250,247,242,0.45); }
+    .course-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: var(--cream); margin-bottom: 0.4rem; line-height: 1.3; }
+    .course-desc { font-size: 0.85rem; color: rgba(250,247,242,0.5); line-height: 1.5; margin-bottom: 1rem; }
+    .course-footer { display: flex; align-items: center; justify-content: space-between; }
+    .course-stats { display: flex; gap: 1rem; }
+    .course-stat { font-size: 0.78rem; color: rgba(250,247,242,0.45); }
+    .course-stat strong { color: rgba(250,247,242,0.8); font-weight: 500; }
+    .course-price-tag { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--cream); }
+    .course-cta { display: block; margin-top: 1.2rem; text-align: center; background: rgba(196,94,42,0.9); color: var(--white); padding: 0.6rem; border-radius: 100px; font-size: 0.88rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+    .course-cta:hover { background: var(--accent); }
+    .courses-note { text-align: center; margin-top: 2rem; font-size: 0.85rem; color: rgba(250,247,242,0.35); }
+    .courses-note a { color: rgba(250,247,242,0.6); text-decoration: none; border-bottom: 1px solid rgba(250,247,242,0.2); transition: color 0.2s; }
+    .courses-note a:hover { color: var(--cream); }
+
+
+    #pricing { background: var(--cream); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; align-items: start; }
+    .pricing-card { background: var(--white); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; transition: transform 0.25s; }
+    .pricing-card:hover { transform: translateY(-4px); }
+    .pricing-card.featured { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+    .pricing-label { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem; color: var(--warm-mid); }
+    .pricing-card.featured .pricing-label { color: rgba(250,247,242,0.5); }
+    .price-num { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700; line-height: 1; }
+    .price-num sup { font-size: 1.3rem; vertical-align: super; }
+    .price-per { font-size: 0.85rem; color: var(--warm-mid); margin-top: 4px; }
+    .pricing-card.featured .price-per { color: rgba(250,247,242,0.6); }
+    .pricing-divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+    .pricing-card.featured .pricing-divider { border-color: rgba(250,247,242,0.15); }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+    .pricing-features li { font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+    .pricing-features li::before { content: ''; width: 16px; height: 16px; flex-shrink: 0; border-radius: 50%; background: var(--accent-light); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23C45E2A' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+    .pricing-card.featured .pricing-features li::before { background-color: rgba(196,94,42,0.3); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23FAF7F2' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+    .pricing-badge { display: inline-block; background: var(--accent); color: var(--white); font-size: 0.72rem; font-weight: 500; padding: 0.2rem 0.7rem; border-radius: 100px; margin-left: 0.7rem; vertical-align: middle; }
+    .pricing-cta { display: block; text-align: center; margin-top: 2rem; padding: 0.85rem; border-radius: 100px; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: background 0.2s, color 0.2s; }
+    .pricing-cta-light { border: 1.5px solid var(--ink); color: var(--ink); }
+    .pricing-cta-light:hover { background: var(--ink); color: var(--cream); }
+    .pricing-cta-dark { background: var(--accent); color: var(--white); }
+    .pricing-cta-dark:hover { background: var(--accent-dark); }
+
+    /* CONTACT */
+    #contact { background: var(--white); }
+    .contact-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 5rem; align-items: start; }
+    .contact-point { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1.5rem; }
+    .contact-icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .contact-point-label { font-size: 0.8rem; color: var(--warm-mid); margin-bottom: 2px; }
+    .contact-point-val { font-size: 0.95rem; font-weight: 500; }
+    form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    label { font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.4rem; }
+    input, select, textarea { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 12px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); background: var(--white); }
+    textarea { resize: vertical; min-height: 120px; }
+    .form-submit { background: var(--accent); color: var(--white); border: none; padding: 0.9rem 2rem; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s; align-self: flex-start; }
+    .form-submit:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .form-note { font-size: 0.8rem; color: var(--warm-mid); margin-top: -0.5rem; }
+
+    /* FOOTER */
+    footer { background: var(--ink); color: rgba(250,247,242,0.6); padding: 3rem 5vw; text-align: center; font-size: 0.85rem; }
+    footer .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--cream); margin-bottom: 0.75rem; }
+    footer .footer-logo span { color: var(--accent); }
+    footer a { color: rgba(250,247,242,0.5); text-decoration: none; margin: 0 1rem; transition: color 0.2s; }
+    footer a:hover { color: var(--cream); }
+    .footer-links { margin: 1rem 0; }
+
+    @media (max-width: 768px) {
+      #hero { grid-template-columns: 1fr; text-align: center; }
+      .hero-desc { margin: 0 auto 2rem; }
+      .hero-btns { justify-content: center; }
+      .hero-stats { justify-content: center; }
+      .hero-visual { display: none; }
+      .contact-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .nav-links li:not(:last-child):not(:nth-last-child(2)) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">Bright<span>Mind</span></a>
+    <ul class="nav-links">
+      <li><a href="#services">Subjects</a></li>
+      <li><a href="#courses">Courses</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><button id="nav-login-btn" onclick="openLogin()">Log in</button></li>
+      <li><a href="#contact" class="nav-cta">Book a Session</a></li>
+    </ul>
+    <div id="nav-user-pill" onclick="openDashboard()">
+      <div class="pill-avatar" id="pill-initials">JS</div>
+      <span id="pill-name">Jane S.</span>
+    </div>
+  </nav>
+
+  <!-- LOGIN / SIGNUP MODAL -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeLogin()">✕</button>
+      <div style="display:flex;gap:0;margin-bottom:1.6rem;border-bottom:2px solid var(--border);">
+        <button id="tab-login" onclick="switchTab('login')" style="flex:1;background:none;border:none;padding:0.65rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;border-bottom:2px solid var(--accent);margin-bottom:-2px;color:var(--ink);">Log in</button>
+        <button id="tab-signup" onclick="switchTab('signup')" style="flex:1;background:none;border:none;padding:0.65rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--warm-mid);">Sign up</button>
+      </div>
+      <!-- Login panel -->
+      <div id="panel-login">
+        <div class="modal-title">Welcome back</div>
+        <div class="modal-sub">Log in to access your classes and grades.</div>
+        <div class="modal-field"><label for="login-email">Email</label><input type="email" id="login-email" placeholder="you@email.com" /></div>
+        <div class="modal-field"><label for="login-pass">Password</label><input type="password" id="login-pass" placeholder="••••••••" /><div class="modal-error" id="login-error"></div></div>
+        <button class="modal-btn" onclick="doLogin()">Log in →</button>
+        <div class="modal-note" style="margin-top:0.8rem;">No account? <a href="#" onclick="switchTab('signup');return false;">Sign up free</a></div>
+      </div>
+      <!-- Sign-up panel -->
+      <div id="panel-signup" style="display:none;">
+        <div class="modal-title">Create account</div>
+        <div class="modal-sub">Join BrightMind and access your classes.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+          <div class="modal-field"><label for="su-first">First name</label><input type="text" id="su-first" placeholder="Jane" /></div>
+          <div class="modal-field"><label for="su-last">Last name</label><input type="text" id="su-last" placeholder="Smith" /></div>
+        </div>
+        <div class="modal-field"><label for="su-email">Email</label><input type="email" id="su-email" placeholder="you@email.com" /></div>
+        <div class="modal-field"><label for="su-pass">Password <span style="font-weight:400;color:var(--warm-mid)">(min 8 chars)</span></label><input type="password" id="su-pass" placeholder="••••••••" /></div>
+        <div class="modal-field">
+          <label for="su-grade">Grade</label>
+          <select id="su-grade" style="width:100%;padding:0.7rem 1rem;border:1px solid var(--border);border-radius:10px;background:var(--cream);font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--ink);outline:none;">
+            <option value="">Select grade…</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+          </select>
+        </div>
+        <div class="modal-error" id="signup-error"></div>
+        <button class="modal-btn" id="signup-btn" onclick="doSignup()">Create account →</button>
+        <div class="modal-note" style="margin-top:0.8rem;">Already have an account? <a href="#" onclick="switchTab('login');return false;">Log in</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD MODAL -->
+  <div class="modal-overlay" id="dashboard-modal">
+    <div class="dash-box">
+      <div class="dash-header">
+        <div class="dash-header-left">
+          <div class="dash-avatar-lg" id="dash-initials">JS</div>
+          <div>
+            <div class="dash-name" id="dash-fullname">Jane Smith</div>
+            <div class="dash-role">Student · Grade 9</div>
+          </div>
+        </div>
+        <button class="dash-close" onclick="closeDashboard()">✕</button>
+      </div>
+      <div class="dash-body">
+        <div class="dash-section-label">Your classes today</div>
+        <div class="dash-classes">
+          <div class="class-row">
+            <div class="class-info">
+              <div class="class-dot dot-live"></div>
+              <div>
+                <div class="class-name">Mathematics — Algebra II</div>
+                <div class="class-time">Live now · with Mr. Peterson</div>
+              </div>
+            </div>
+            <button class="join-btn" onclick="joinClass('Mathematics')">Join now</button>
+          </div>
+          <div class="class-row">
+            <div class="class-info">
+              <div class="class-dot dot-soon"></div>
+              <div>
+                <div class="class-name">Chemistry — Periodic Table</div>
+                <div class="class-time">Starts in 35 min · with Dr. Kim</div>
+              </div>
+            </div>
+            <button class="join-btn soon">Soon</button>
+          </div>
+          <div class="class-row">
+            <div class="class-info">
+              <div class="class-dot dot-later"></div>
+              <div>
+                <div class="class-name">SAT Prep — Reading Strategies</div>
+                <div class="class-time">Tomorrow, 10:00 AM · with Ms. Torres</div>
+              </div>
+            </div>
+            <button class="join-btn soon">Scheduled</button>
+          </div>
+          <div class="class-row">
+            <div class="class-info">
+              <div class="class-dot dot-later"></div>
+              <div>
+                <div class="class-name">Computer Science — Python Basics</div>
+                <div class="class-time">Fri, 2:00 PM · with Mr. Osei</div>
+              </div>
+            </div>
+            <button class="join-btn soon">Scheduled</button>
+          </div>
+        </div>
+
+        <div class="dash-section-label">Current grades</div>
+        <div class="dash-grades">
+          <div class="grade-card">
+            <div class="grade-subject">Mathematics</div>
+            <div class="grade-num high">9</div>
+            <div class="grade-bar"><div class="grade-fill" style="width:90%"></div></div>
+          </div>
+          <div class="grade-card">
+            <div class="grade-subject">Chemistry</div>
+            <div class="grade-num mid">7</div>
+            <div class="grade-bar"><div class="grade-fill" style="width:70%"></div></div>
+          </div>
+          <div class="grade-card">
+            <div class="grade-subject">SAT Prep</div>
+            <div class="grade-num high">8</div>
+            <div class="grade-bar"><div class="grade-fill" style="width:80%"></div></div>
+          </div>
+          <div class="grade-card">
+            <div class="grade-subject">Computer Science</div>
+            <div class="grade-num high">10</div>
+            <div class="grade-bar"><div class="grade-fill" style="width:100%"></div></div>
+          </div>
+          <div class="grade-card">
+            <div class="grade-subject">English / Writing</div>
+            <div class="grade-num mid">6</div>
+            <div class="grade-bar"><div class="grade-fill" style="width:60%"></div></div>
+          </div>
+        </div>
+
+        <button class="logout-btn" onclick="doLogout()">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero-wrap">
+    <div id="hero">
+      <div class="hero-text">
+        <div class="hero-tag">Expert Tutoring — All Subjects</div>
+        <h1>Learn faster,<br><em>understand</em><br>deeper.</h1>
+        <p class="hero-desc">Personalized one-on-one sessions with expert tutors in math, science, languages, and more. Flexible scheduling, measurable results.</p>
+        <div class="hero-btns">
+          <a href="#contact" class="btn-primary">Book a Free Trial</a>
+          <a href="#services" class="btn-ghost">View subjects</a>
+        </div>
+        <div class="hero-stats">
+          <div><div class="stat-num">320+</div><div class="stat-label">Active students</div></div>
+          <div><div class="stat-num">96%</div><div class="stat-label">Satisfaction rate</div></div>
+          <div><div class="stat-num">8</div><div class="stat-label">Subjects covered</div></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-chip chip-1"><span class="chip-dot dot-green"></span>Live session now</div>
+        <div class="hero-card-main">
+          <div class="card-subject-badge">Today's session</div>
+          <div class="card-title">Calculus — Derivatives &amp; Integrals</div>
+          <div class="stars">★★★★★</div>
+          <div class="card-tutor">
+            <div class="avatar avatar-a">SR</div>
+            <div>
+              <div class="tutor-name">Sarah R.</div>
+              <div class="tutor-sub">Mathematics · 5 yrs exp.</div>
+            </div>
+          </div>
+        </div>
+        <div class="floating-chip chip-2"><span class="chip-dot dot-blue"></span>Lesson in 30 min</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARQUEE -->
+  <div class="subjects-bar">
+    <div class="marquee-track">
+      <span class="marquee-item">Mathematics<span>·</span></span>
+      <span class="marquee-item">Physics<span>·</span></span>
+      <span class="marquee-item">Chemistry<span>·</span></span>
+      <span class="marquee-item">Biology<span>·</span></span>
+      <span class="marquee-item">English<span>·</span></span>
+      <span class="marquee-item">Computer Science<span>·</span></span>
+      <span class="marquee-item">SAT Prep<span>·</span></span>
+      <span class="marquee-item">French<span>·</span></span>
+      <span class="marquee-item">Mathematics<span>·</span></span>
+      <span class="marquee-item">Physics<span>·</span></span>
+      <span class="marquee-item">Chemistry<span>·</span></span>
+      <span class="marquee-item">Biology<span>·</span></span>
+      <span class="marquee-item">English<span>·</span></span>
+      <span class="marquee-item">Computer Science<span>·</span></span>
+      <span class="marquee-item">SAT Prep<span>·</span></span>
+      <span class="marquee-item">French<span>·</span></span>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="section-inner">
+      <p class="section-tag">What we teach</p>
+      <h2>Every subject,<br>every level.</h2>
+      <p class="section-desc">From elementary fundamentals to advanced university coursework — our tutors meet you exactly where you are.</p>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon icon-math">➕</div>
+          <div class="service-name">Mathematics</div>
+          <p class="service-desc">Arithmetic, algebra, geometry, trigonometry, calculus, and statistics. Build confidence from fundamentals to advanced topics.</p>
+          <div class="service-price">From $40/hr</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon icon-science">🔬</div>
+          <div class="service-name">Sciences</div>
+          <p class="service-desc">Physics, chemistry, and biology for all levels. Lab report help, exam prep, and conceptual deep-dives.</p>
+          <div class="service-price">From $45/hr</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon icon-lang">📖</div>
+          <div class="service-name">English &amp; Literature</div>
+          <p class="service-desc">Composition, essay writing, reading comprehension, and literary analysis from middle school through university.</p>
+          <div class="service-price">From $38/hr</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon icon-test">📝</div>
+          <div class="service-name">SAT Preparation</div>
+          <p class="service-desc">Targeted SAT strategies, full practice tests, section-by-section coaching, and score-improvement plans.</p>
+          <div class="service-price">From $55/hr</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon" style="background:#DBEAFE;">🇫🇷</div>
+          <div class="service-name">French</div>
+          <p class="service-desc">Reading, writing, conversation, and grammar at all levels — from beginner to advanced fluency.</p>
+          <div class="service-price">From $40/hr</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon icon-code">💻</div>
+          <div class="service-name">Computer Science</div>
+          <p class="service-desc">Python, Java, web development, data structures, algorithms, and introductory programming for all ages.</p>
+          <div class="service-price">From $50/hr</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COURSES -->
+  <section id="courses">
+    <div class="section-inner">
+      <p class="section-tag">Video bundle courses</p>
+      <h2>Learn at your own pace.</h2>
+      <p class="section-desc">Pre-recorded expert-led courses you can watch anytime. Perfect for self-study, exam prep, or reinforcing what you've learned in 1-on-1 sessions.</p>
+      <div class="courses-grid">
+
+        <div class="course-card">
+          <div class="course-thumb course-thumb-math">
+            📐
+            <span class="course-badge">Bestseller</span>
+            <span class="course-play">▶ 24 lessons</span>
+          </div>
+          <div class="course-body">
+            <div class="course-meta"><span class="course-tag">Mathematics</span><span class="course-tag">·</span><span class="course-tag">Grades 8–10</span></div>
+            <div class="course-name">Algebra & Geometry Complete Bundle</div>
+            <p class="course-desc">Master equations, functions, shapes, and proofs with step-by-step video walkthroughs and downloadable practice sheets.</p>
+            <div class="course-footer">
+              <div class="course-stats">
+                <div class="course-stat"><strong>24</strong> videos</div>
+                <div class="course-stat"><strong>8h</strong> total</div>
+              </div>
+              <div class="course-price-tag">$79</div>
+            </div>
+            <a href="#contact" class="course-cta">Enroll now →</a>
+          </div>
+        </div>
+
+        <div class="course-card">
+          <div class="course-thumb course-thumb-sci">
+            ⚗️
+            <span class="course-play">▶ 18 lessons</span>
+          </div>
+          <div class="course-body">
+            <div class="course-meta"><span class="course-tag">Sciences</span><span class="course-tag">·</span><span class="course-tag">Grades 9–10</span></div>
+            <div class="course-name">Chemistry & Biology Foundations</div>
+            <p class="course-desc">From atomic structure to cell biology — animated explainers, lab walkthroughs, and exam-ready summaries for every unit.</p>
+            <div class="course-footer">
+              <div class="course-stats">
+                <div class="course-stat"><strong>18</strong> videos</div>
+                <div class="course-stat"><strong>6h</strong> total</div>
+              </div>
+              <div class="course-price-tag">$69</div>
+            </div>
+            <a href="#contact" class="course-cta">Enroll now →</a>
+          </div>
+        </div>
+
+        <div class="course-card">
+          <div class="course-thumb course-thumb-sat">
+            📋
+            <span class="course-badge">New</span>
+            <span class="course-play">▶ 30 lessons</span>
+          </div>
+          <div class="course-body">
+            <div class="course-meta"><span class="course-tag">SAT Prep</span><span class="course-tag">·</span><span class="course-tag">Grades 9–10</span></div>
+            <div class="course-name">SAT Complete Prep Course</div>
+            <p class="course-desc">Full coverage of Math, Reading, and Writing sections. Timed practice tests, score breakdowns, and proven strategies to raise your score.</p>
+            <div class="course-footer">
+              <div class="course-stats">
+                <div class="course-stat"><strong>30</strong> videos</div>
+                <div class="course-stat"><strong>12h</strong> total</div>
+              </div>
+              <div class="course-price-tag">$99</div>
+            </div>
+            <a href="#contact" class="course-cta">Enroll now →</a>
+          </div>
+        </div>
+
+        <div class="course-card">
+          <div class="course-thumb course-thumb-cs">
+            💡
+            <span class="course-play">▶ 20 lessons</span>
+          </div>
+          <div class="course-body">
+            <div class="course-meta"><span class="course-tag">Computer Science</span><span class="course-tag">·</span><span class="course-tag">Grades 7–10</span></div>
+            <div class="course-name">Intro to Python & Programming Logic</div>
+            <p class="course-desc">Zero to confident coder. Learn variables, loops, functions, and mini-projects in Python with hands-on exercises after every lesson.</p>
+            <div class="course-footer">
+              <div class="course-stats">
+                <div class="course-stat"><strong>20</strong> videos</div>
+                <div class="course-stat"><strong>7h</strong> total</div>
+              </div>
+              <div class="course-price-tag">$79</div>
+            </div>
+            <a href="#contact" class="course-cta">Enroll now →</a>
+          </div>
+        </div>
+
+      </div>
+      <p class="courses-note">All courses include lifetime access + free updates. Want a bundle discount? <a href="#contact">Contact us.</a></p>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="section-inner">
+      <p class="section-tag">Flexible plans</p>
+      <h2>Simple, transparent pricing.</h2>
+      <p class="section-desc">No contracts, no surprise fees. Pay per session or save with a monthly bundle.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-label">Single Session</div>
+          <div class="price-num"><sup>$</sup>40</div>
+          <div class="price-per">per hour · pay as you go</div>
+          <hr class="pricing-divider" />
+          <ul class="pricing-features">
+            <li>1-on-1 with expert tutor</li>
+            <li>Any subject</li>
+            <li>Flexible scheduling</li>
+            <li>Session notes provided</li>
+          </ul>
+          <a href="#contact" class="pricing-cta pricing-cta-light">Get started</a>
+        </div>
+        <div class="pricing-card featured">
+          <div class="pricing-label">Monthly Bundle <span class="pricing-badge">Most popular</span></div>
+          <div class="price-num"><sup>$</sup>149</div>
+          <div class="price-per">per month · 4 sessions included</div>
+          <hr class="pricing-divider" />
+          <ul class="pricing-features">
+            <li>Everything in Single</li>
+            <li>Progress tracking</li>
+            <li>Priority scheduling</li>
+            <li>Homework review support</li>
+          </ul>
+          <a href="#contact" class="pricing-cta pricing-cta-dark">Book now</a>
+        </div>
+        <div class="pricing-card">
+          <div class="pricing-label">Intensive Plan</div>
+          <div class="price-num"><sup>$</sup>289</div>
+          <div class="price-per">per month · 8 sessions included</div>
+          <hr class="pricing-divider" />
+          <ul class="pricing-features">
+            <li>Everything in Monthly</li>
+            <li>Bi-weekly progress reports</li>
+            <li>Custom study plans</li>
+            <li>Parent/guardian updates</li>
+          </ul>
+          <a href="#contact" class="pricing-cta pricing-cta-light">Get started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-inner">
+      <div class="contact-layout">
+        <div class="contact-info">
+          <p class="section-tag">Book a session</p>
+          <h2>Let's start your learning journey.</h2>
+          <p class="section-desc" style="margin-bottom:2.5rem;">Fill out the form and we'll match you with the perfect tutor within 24 hours. First trial session is free.</p>
+          <div class="contact-point">
+            <div class="contact-icon">📍</div>
+            <div><div class="contact-point-label">Sessions</div><div class="contact-point-val">Online or in-person &nbsp;<a href="schedule.html" style="color:var(--accent);font-size:0.85rem;text-decoration:none;border-bottom:1px solid var(--accent-light);" onmouseover="this.style.borderBottomColor='var(--accent)'" onmouseout="this.style.borderBottomColor='var(--accent-light)'">Details here →</a></div></div>
+          </div>
+          <div class="contact-point">
+            <div class="contact-icon">✉️</div>
+            <div><div class="contact-point-label">Email</div><div class="contact-point-val">hello@brightmind.edu</div></div>
+          </div>
+        </div>
+
+        <form onsubmit="handleSubmit(event)">
+          <div class="form-row">
+            <div><label for="fname">First name</label><input type="text" id="fname" placeholder="Jane" required /></div>
+            <div><label for="lname">Last name</label><input type="text" id="lname" placeholder="Smith" required /></div>
+          </div>
+          <div><label for="email">Email address</label><input type="email" id="email" placeholder="jane@email.com" required /></div>
+          <div>
+            <label for="subject">Subject needed</label>
+            <select id="subject">
+              <option value="">Select a subject…</option>
+              <option>Mathematics</option>
+              <option>Physics</option>
+              <option>Chemistry</option>
+              <option>Biology</option>
+              <option>English / Writing</option>
+              <option>Computer Science</option>
+              <option>SAT Preparation</option>
+              <option>French</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="level">Grade (1–10)</label>
+            <select id="level">
+              <option value="">Select your grade…</option>
+              <option>Grade 1</option>
+              <option>Grade 2</option>
+              <option>Grade 3</option>
+              <option>Grade 4</option>
+              <option>Grade 5</option>
+              <option>Grade 6</option>
+              <option>Grade 7</option>
+              <option>Grade 8</option>
+              <option>Grade 9</option>
+              <option>Grade 10</option>
+            </select>
+          </div>
+          <div><label for="message">Tell us more (optional)</label><textarea id="message" placeholder="What topics do you need help with? Any upcoming exams?"></textarea></div>
+          <p class="form-note">🔒 Your info is private and never shared. We'll reach out within 24 hours.</p>
+          <button type="submit" class="form-submit" id="submitBtn">Request Free Trial →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">Bright<span>Mind</span></div>
+    <div class="footer-links">
+      <a href="#services">Subjects</a>
+      <a href="#courses">Courses</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <p>© 2026 BrightMind Tutoring. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // ── CONFIG — replace with your Railway URL after deploying ──────
+    // e.g. 'https://brightmind-production.up.railway.app/api'
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000/api'
+      : 'https://YOUR-RAILWAY-URL.up.railway.app/api';
+
+    // ── Token storage ───────────────────────────────────────────────
+    const store = {
+      get token()  { return localStorage.getItem('bm_token'); },
+      save(token)  { localStorage.setItem('bm_token', token); },
+      clear()      { localStorage.removeItem('bm_token'); }
+    };
+
+    // ── API helper ──────────────────────────────────────────────────
+    async function api(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (store.token) headers['Authorization'] = 'Bearer ' + store.token;
+      const res = await fetch(API_BASE + path, { ...options, headers });
+      if (res.status === 401) { store.clear(); showLoggedOut(); return null; }
+      return res;
+    }
+
+    // ── UI helpers ──────────────────────────────────────────────────
+    function initials(u) {
+      return ((u.firstName?.[0] || '') + (u.lastName?.[0] || '')).toUpperCase();
+    }
+
+    function showLoggedIn(user) {
+      document.getElementById('nav-login-btn').parentElement.style.display = 'none';
+      const pill = document.getElementById('nav-user-pill');
+      pill.style.display = 'flex';
+      document.getElementById('pill-initials').textContent = initials(user);
+      document.getElementById('pill-name').textContent = user.firstName + ' ' + user.lastName[0] + '.';
+      document.getElementById('dash-initials').textContent = initials(user);
+      document.getElementById('dash-fullname').textContent = user.firstName + ' ' + user.lastName;
+      // Populate grades if they exist
+      if (user.grades) {
+        const gradeCards = document.querySelectorAll('.grade-card');
+        gradeCards.forEach(card => {
+          const subject = card.querySelector('.grade-subject').textContent;
+          const val = user.grades[subject];
+          const numEl = card.querySelector('.grade-num');
+          const fillEl = card.querySelector('.grade-fill');
+          if (val !== null && val !== undefined) {
+            numEl.textContent = val;
+            numEl.className = 'grade-num ' + (val >= 8 ? 'high' : val >= 5 ? 'mid' : 'low');
+            fillEl.style.width = (val * 10) + '%';
+          }
+        });
+      }
+    }
+
+    function showLoggedOut() {
+      document.getElementById('nav-user-pill').style.display = 'none';
+      document.getElementById('nav-login-btn').parentElement.style.display = '';
+    }
+
+    function setLoginError(msg) {
+      const el = document.getElementById('login-error');
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+    }
+
+    function setLoginLoading(loading) {
+      const btn = document.querySelector('#login-modal .modal-btn');
+      btn.textContent = loading ? 'Logging in…' : 'Log in →';
+      btn.disabled = loading;
+    }
+
+    // ── Tab switching ───────────────────────────────────────────────
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('panel-login').style.display  = isLogin ? '' : 'none';
+      document.getElementById('panel-signup').style.display = isLogin ? 'none' : '';
+      document.getElementById('tab-login').style.borderBottomColor  = isLogin ? 'var(--accent)' : 'transparent';
+      document.getElementById('tab-login').style.color               = isLogin ? 'var(--ink)' : 'var(--warm-mid)';
+      document.getElementById('tab-signup').style.borderBottomColor = isLogin ? 'transparent' : 'var(--accent)';
+      document.getElementById('tab-signup').style.color              = isLogin ? 'var(--warm-mid)' : 'var(--ink)';
+    }
+
+    // ── Sign-up from modal ──────────────────────────────────────────
+    async function doSignup() {
+      const firstName = document.getElementById('su-first').value.trim();
+      const lastName  = document.getElementById('su-last').value.trim();
+      const email     = document.getElementById('su-email').value.trim();
+      const password  = document.getElementById('su-pass').value;
+      const grade     = document.getElementById('su-grade').value ? parseInt(document.getElementById('su-grade').value) : null;
+      const errEl     = document.getElementById('signup-error');
+      const btn       = document.getElementById('signup-btn');
+
+      if (!firstName || !lastName || !email || !password) { errEl.textContent = 'Please fill in all fields.'; errEl.style.display='block'; return; }
+      if (password.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display='block'; return; }
+
+      btn.textContent = 'Creating account…'; btn.disabled = true; errEl.style.display = 'none';
+      try {
+        const res  = await fetch(API_BASE + '/signup', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, email, password, grade })
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error || 'Sign-up failed.'; errEl.style.display='block'; return; }
+        store.save(data.token);
+        closeLogin();
+        showLoggedIn(data.user);
+        openDashboard();
+      } catch {
+        errEl.textContent = 'Could not reach the server. Please try again.'; errEl.style.display='block';
+      } finally {
+        btn.textContent = 'Create account →'; btn.disabled = false;
+      }
+    }
+
+
+    function openLogin() {
+      document.getElementById('login-modal').classList.add('open');
+      setLoginError('');
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-pass').value = '';
+    }
+    function closeLogin() {
+      document.getElementById('login-modal').classList.remove('open');
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass  = document.getElementById('login-pass').value;
+      if (!email || !pass) { setLoginError('Please enter your email and password.'); return; }
+      setLoginLoading(true);
+      setLoginError('');
+      try {
+        const res  = await fetch(API_BASE + '/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const data = await res.json();
+        if (!res.ok) { setLoginError(data.error || 'Login failed.'); return; }
+        store.save(data.token);
+        closeLogin();
+        showLoggedIn(data.user);
+        openDashboard();
+      } catch {
+        setLoginError('Could not reach the server. Please try again.');
+      } finally {
+        setLoginLoading(false);
+      }
+    }
+
+    // ── Booking / Sign-up form ──────────────────────────────────────
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+
+      const firstName = document.getElementById('fname').value.trim();
+      const lastName  = document.getElementById('lname').value.trim();
+      const email     = document.getElementById('email').value.trim();
+      const gradeStr  = document.getElementById('level').value;
+      const grade     = gradeStr ? parseInt(gradeStr.replace('Grade ', '')) : null;
+
+      try {
+        const res  = await fetch(API_BASE + '/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, email, password: 'ChangeMe123!', grade })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          store.save(data.token);
+          showLoggedIn(data.user);
+          btn.textContent = '✓ Request sent & account created!';
+          btn.style.background = '#2A7A4A';
+        } else {
+          btn.textContent = '✓ Request sent! We\'ll be in touch soon.';
+          btn.style.background = '#2A7A4A';
+        }
+      } catch {
+        btn.textContent = '✓ Request sent! We\'ll be in touch soon.';
+        btn.style.background = '#2A7A4A';
+      }
+    }
+
+    // ── Dashboard ───────────────────────────────────────────────────
+    function openDashboard() {
+      if (!store.token) { openLogin(); return; }
+      document.getElementById('dashboard-modal').classList.add('open');
+    }
+    function closeDashboard() {
+      document.getElementById('dashboard-modal').classList.remove('open');
+    }
+
+    async function doLogout() {
+      store.clear();
+      closeDashboard();
+      showLoggedOut();
+    }
+
+    function joinClass(subject) {
+      alert('Joining ' + subject + ' class… (wire up your video conferencing link here)');
+    }
+
+    // ── Restore session on page load ────────────────────────────────
+    (async () => {
+      if (store.token) {
+        try {
+          const res = await api('/me');
+          if (res && res.ok) {
+            const data = await res.json();
+            showLoggedIn(data.user);
+          } else {
+            store.clear();
+          }
+        } catch {}
+      }
+    })();
+
+    // ── Close modals on backdrop click ──────────────────────────────
+    document.getElementById('login-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeLogin();
+    });
+    document.getElementById('dashboard-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeDashboard();
+    });
+    document.getElementById('login-pass').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+  </script>
+</body>
+</html>
+
+
+    // ── Token storage (sessionStorage clears on tab close) ──────
+    const store = {
+      get access()  { return sessionStorage.getItem('bm_access'); },
+      get refresh() { return localStorage.getItem('bm_refresh'); },
+      save(access, refresh) {
+        sessionStorage.setItem('bm_access', access);
+        if (refresh) localStorage.setItem('bm_refresh', refresh);
+      },
+      clear() {
+        sessionStorage.removeItem('bm_access');
+        localStorage.removeItem('bm_refresh');
+      }
+    };
+
+    // ── API helper with auto-refresh ─────────────────────────────
+    async function api(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (store.access) headers['Authorization'] = 'Bearer ' + store.access;
+
+      let res = await fetch(API_BASE + path, { ...options, headers });
+
+      // Access token expired — try refresh
+      if (res.status === 401 && store.refresh) {
+        const rr = await fetch(API_BASE + '/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: store.refresh })
+        });
+        if (rr.ok) {
+          const data = await rr.json();
+          store.save(data.accessToken, data.refreshToken);
+          headers['Authorization'] = 'Bearer ' + data.accessToken;
+          res = await fetch(API_BASE + path, { ...options, headers });
+        } else {
+          store.clear();
+          showLoggedOut();
+          return null;
+        }
+      }
+      return res;
+    }
+
+    // ── UI helpers ───────────────────────────────────────────────
+    function initials(first, last) {
+      return ((first?.[0] || '') + (last?.[0] || '')).toUpperCase();
+    }
+
+    function showLoggedIn(user) {
+      document.getElementById('nav-login-btn').parentElement.style.display = 'none';
+      const pill = document.getElementById('nav-user-pill');
+      pill.style.display = 'flex';
+      document.getElementById('pill-initials').textContent = initials(user.first_name, user.last_name);
+      document.getElementById('pill-name').textContent = user.first_name + ' ' + user.last_name[0] + '.';
+      document.getElementById('dash-initials').textContent = initials(user.first_name, user.last_name);
+      document.getElementById('dash-fullname').textContent = user.first_name + ' ' + user.last_name;
+    }
+
+    function showLoggedOut() {
+      document.getElementById('nav-user-pill').style.display = 'none';
+      document.getElementById('nav-login-btn').parentElement.style.display = '';
+    }
+
+    function setLoginError(msg) {
+      const el = document.getElementById('login-error');
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+    }
+
+    function setLoginLoading(loading) {
+      const btn = document.querySelector('#login-modal .modal-btn');
+      btn.textContent = loading ? 'Logging in…' : 'Log in →';
+      btn.disabled = loading;
+    }
+
+    // ── Login modal ──────────────────────────────────────────────
+    function openLogin() {
+      document.getElementById('login-modal').classList.add('open');
+      setLoginError('');
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-pass').value = '';
+    }
+    function closeLogin() {
+      document.getElementById('login-modal').classList.remove('open');
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass  = document.getElementById('login-pass').value;
+      if (!email || !pass) { setLoginError('Please enter your email and password.'); return; }
+
+      setLoginLoading(true);
+      setLoginError('');
+
+      try {
+        const res = await fetch(API_BASE + '/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const data = await res.json();
+        if (!res.ok) { setLoginError(data.error || 'Login failed.'); return; }
+
+        store.save(data.accessToken, data.refreshToken);
+        closeLogin();
+        showLoggedIn(data.user);
+        openDashboard();
+      } catch {
+        setLoginError('Could not reach the server. Please try again.');
+      } finally {
+        setLoginLoading(false);
+      }
+    }
+
+    // ── Sign-up (reuses the booking form for now) ────────────────
+    // When a user submits the booking form we also create their account.
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+
+      const first_name = document.getElementById('fname').value.trim();
+      const last_name  = document.getElementById('lname').value.trim();
+      const email      = document.getElementById('email').value.trim();
+      const gradeStr   = document.getElementById('level').value;     // e.g. "Grade 7"
+      const grade      = gradeStr ? parseInt(gradeStr.replace('Grade ', '')) : null;
+
+      // Attempt to create account with a temporary password
+      // (student will receive an email to set their own — add email logic later)
+      try {
+        const res = await fetch(API_BASE + '/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ first_name, last_name, email, password: 'ChangeMe123!', grade })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          store.save(data.accessToken, data.refreshToken);
+          showLoggedIn(data.user);
+          btn.textContent = '✓ Request sent & account created!';
+          btn.style.background = '#2A7A4A';
+        } else if (res.status === 409) {
+          // Already has an account — that's fine, just confirm request
+          btn.textContent = '✓ Request sent! We\'ll be in touch soon.';
+          btn.style.background = '#2A7A4A';
+        } else {
+          btn.textContent = '✓ Request sent! We\'ll be in touch soon.';
+          btn.style.background = '#2A7A4A';
+        }
+      } catch {
+        btn.textContent = '✓ Request sent! We\'ll be in touch soon.';
+        btn.style.background = '#2A7A4A';
+      }
+    }
+
+    // ── Dashboard ────────────────────────────────────────────────
+    function openDashboard() {
+      if (!store.access && !store.refresh) { openLogin(); return; }
+      document.getElementById('dashboard-modal').classList.add('open');
+    }
+    function closeDashboard() {
+      document.getElementById('dashboard-modal').classList.remove('open');
+    }
+
+    async function doLogout() {
+      await fetch(API_BASE + '/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: store.refresh })
+      }).catch(() => {});
+      store.clear();
+      closeDashboard();
+      showLoggedOut();
+    }
+
+    function joinClass(subject) {
+      alert('Joining ' + subject + ' class… (wire up your video conferencing link here)');
+    }
+
+    // ── Restore session on page load ─────────────────────────────
+    (async () => {
+      if (store.refresh) {
+        try {
+          const res = await api('/user/me');
+          if (res && res.ok) {
+            const user = await res.json();
+            showLoggedIn(user);
+          }
+        } catch {}
+      }
+    })();
+
+    // ── Close modals on backdrop click ───────────────────────────
+    document.getElementById('login-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeLogin();
+    });
+    document.getElementById('dashboard-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeDashboard();
+    });
+
+    // Enter key in password field
+    document.getElementById('login-pass').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+  </script>
+</body>
+</html>
