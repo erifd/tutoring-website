@@ -65,16 +65,6 @@ app.post('/api/signup', authLimiter, async (req, res) => {
       grade: grade || null,
       role: 'student',
       createdAt: new Date().toISOString(),
-      grades: {
-        'Mathematics': null, 'Chemistry': null, 'SAT Prep': null,
-        'Computer Science': null, 'English / Writing': null,
-      },
-      classes: [
-        { name: 'Mathematics — Algebra II',      tutor: 'Mr. Peterson', status: 'live',      time: 'Live now' },
-        { name: 'Chemistry — Periodic Table',    tutor: 'Dr. Kim',      status: 'soon',      time: 'Starts in 35 min' },
-        { name: 'SAT Prep — Reading Strategies', tutor: 'Ms. Torres',   status: 'scheduled', time: 'Tomorrow, 10:00 AM' },
-        { name: 'Computer Science — Python',     tutor: 'Mr. Osei',     status: 'scheduled', time: 'Fri, 2:00 PM' },
-      ],
     };
 
     db.get('users').push(newUser).write();
@@ -123,9 +113,24 @@ app.put('/api/me/grades', requireAuth, (req, res) => {
   res.json({ grades: updatedGrades });
 });
 
+// Public: student count for hero stat
+app.get('/api/stats', (req, res) => {
+  const count = db.get('users').value().length;
+  res.json({ studentCount: count });
+});
+
+// Admin: full student list (protected by admin key header)
+app.get('/api/admin/students', (req, res) => {
+  const key = req.headers['x-admin-key'];
+  const ADMIN_KEY = process.env.ADMIN_KEY || 'Admin2026!';
+  if (key !== ADMIN_KEY) return res.status(403).json({ error: 'Forbidden.' });
+  const students = db.get('users').value().map(sanitize);
+  res.json({ students });
+});
+
 function sanitize(user) {
   const { passwordHash, ...safe } = user;
   return safe;
 }
 
-app.listen(PORT, () => console.log(`BrightMind server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`SmartScope server running on port ${PORT}`));
