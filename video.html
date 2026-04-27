@@ -244,17 +244,46 @@ let progress   = {};
 const SPEEDS   = [0.5,0.75,1,1.25,1.5,2];
 let spdIdx     = 2;
 
+// ── Auth helpers (shared across all pages) ────────────────────────
+const isAdmin = () => sessionStorage.getItem('ss_admin') === '1';
+
+// ── Admin bar ─────────────────────────────────────────────────────
+function injectAdminBar(){
+  if(!isAdmin()) return;
+  const bar = document.createElement('div');
+  bar.style.cssText='background:#1C2333;border-bottom:1px solid #4F6EF755;padding:6px 5vw;display:flex;align-items:center;gap:1rem;font-size:0.75rem;font-weight:700;color:#93C5FD;position:sticky;top:54px;z-index:99';
+  bar.innerHTML=`<span style="background:#4F6EF7;color:#fff;padding:2px 8px;border-radius:100px;font-size:0.65rem;letter-spacing:0.08em">ADMIN</span>
+    <span>Viewing as admin — all courses visible</span>
+    <a href="admin-courses.html" style="color:#4F6EF7;text-decoration:none;margin-left:auto">⚙ Course Builder →</a>
+    <a href="tutoring-site.html" style="color:#8B949E;text-decoration:none">← Site</a>`;
+  document.querySelector('header').after(bar);
+}
+
 // ── Init ──────────────────────────────────────────────────────────
 function init(){
-  const all = getCourses().filter(c=>c.published);
-  if(!all.length){ document.getElementById('no-courses').style.display='flex'; return; }
+  injectAdminBar();
+
+  // admin sees ALL courses including drafts; students only see published
+  const all = isAdmin() ? getCourses() : getCourses().filter(c=>c.published);
+
+  if(!all.length){
+    const nc = document.getElementById('no-courses');
+    nc.style.display='flex';
+    if(isAdmin()){
+      nc.innerHTML=`<div class="ni">🎬</div>
+        <div style="font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:0.5rem">No courses yet</div>
+        <p style="font-size:0.88rem;margin-bottom:1.2rem">Create your first course in the admin builder.</p>
+        <a href="admin-courses.html" style="background:var(--grad);color:var(--white);padding:0.65rem 1.4rem;border-radius:100px;text-decoration:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.88rem">Go to Course Builder →</a>`;
+    }
+    return;
+  }
 
   const idx  = Math.min(courseIdx, all.length-1);
   course     = all[idx];
   lessons    = course.lessons||[];
   progress   = getProgress(idx);
 
-  document.getElementById('h-course-name').textContent = course.name;
+  document.getElementById('h-course-name').textContent = course.name + (isAdmin()&&!course.published?' 📝 DRAFT':'');
   document.getElementById('pl-name').textContent       = course.name;
   document.getElementById('player-wrap').style.display = 'flex';
 

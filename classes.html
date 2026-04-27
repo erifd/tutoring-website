@@ -398,7 +398,33 @@
     }).join('');
   }
 
+  const isAdmin = () => sessionStorage.getItem('ss_admin') === '1';
+
+  function injectAdminBar(){
+    if(!isAdmin()) return;
+    const bar = document.createElement('div');
+    bar.style.cssText='background:#1C2333;border-bottom:1px solid #4F6EF755;padding:6px 5vw;display:flex;align-items:center;gap:1rem;font-size:0.75rem;font-weight:700;color:#93C5FD;';
+    bar.innerHTML=`<span style="background:#4F6EF7;color:#fff;padding:2px 8px;border-radius:100px;font-size:0.65rem;letter-spacing:0.08em">ADMIN</span>
+      <span>Admin view — managing all student classes</span>
+      <a href="admin-courses.html" style="color:#4F6EF7;text-decoration:none;margin-left:auto">⚙ Course Builder →</a>
+      <a href="tutoring-site.html" style="color:#8B949E;text-decoration:none">← Site</a>`;
+    document.querySelector('header').after(bar);
+  }
+
   function init(){
+    injectAdminBar();
+    // Admin can access without being logged in as a student
+    if(isAdmin()){
+      currentUser={ id:'admin', firstName:'Admin', lastName:'' };
+      document.getElementById('logged-in-content').style.display='block';
+      document.getElementById('page-greeting').textContent='Admin — Class Overview 🗓️';
+      document.getElementById('header-av').textContent='⚙';
+      document.getElementById('header-name').textContent='Admin';
+      calY=new Date().getFullYear(); calM=new Date().getMonth();
+      renderUpcoming();
+      renderPast();
+      return;
+    }
     const user=getUser();
     const token=getToken();
     if(!user||!token){

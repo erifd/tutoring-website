@@ -421,15 +421,19 @@
   <div class="admin-box">
     <div class="admin-head">
       <div class="admin-head-title">Admin Panel <span class="admin-tag">SmartScope</span></div>
-      <button class="dash-close" onclick="closeAdmin()">✕</button>
+      <div style="display:flex;align-items:center;gap:0.7rem">
+        <a href="admin-courses.html" style="background:#4F6EF722;color:#93C5FD;border:1px solid #4F6EF755;padding:0.38rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:700;text-decoration:none;transition:all 0.2s">⚙ Course Builder →</a>
+        <button class="dash-close" onclick="closeAdmin()">✕</button>
+      </div>
     </div>
     <div class="admin-body">
 
       <div class="admin-card">
         <div class="admin-card-title">📊 Overview</div>
         <div class="stats-row">
-          <div class="stat-box"><div class="stat-big" id="a-students">0</div><div class="stat-lbl">Students</div></div>
+          <div class="stat-box"><div class="stat-big" id="a-students">0</div><div class="stat-lbl">Students signed up</div></div>
           <div class="stat-box"><div class="stat-big" id="a-classes">0</div><div class="stat-lbl">Classes booked</div></div>
+          <div class="stat-box"><div class="stat-big" id="a-courses">0</div><div class="stat-lbl">Courses published</div></div>
         </div>
       </div>
 
@@ -659,7 +663,7 @@
         </div>
         <div class="cp">
           <div class="cp-icon">✉️</div>
-          <div><div class="cp-lbl">Email</div><div class="cp-val">hello@smartscope.com</div></div>
+          <div><div class="cp-lbl">Email</div><div class="cp-val">smartscope@gmail.com</div></div>
         </div>
       </div>
       <form class="main-form" onsubmit="handleSubmit(event)">
@@ -776,7 +780,9 @@
     err.style.display='none';
     if (!email||!pass) { err.textContent='Fill both fields!'; err.style.display='block'; return; }
     if (email===ADMIN_EMAIL && pass===ADMIN_PASS) {
-      isAdmin=true; showPill({firstName:'Admin',lastName:''}); closeLogin(); openAdmin(); return;
+      isAdmin=true;
+      sessionStorage.setItem('ss_admin','1'); // persist across pages
+      showPill({firstName:'Admin',lastName:''}); closeLogin(); openAdmin(); return;
     }
     btn.textContent='Logging in…'; btn.disabled=true;
     try {
@@ -909,28 +915,49 @@
 
   async function refreshAdmin(){
     let students=[];
+    // Fetch real students from server
     try{
       const r=await fetch(API+'/admin/students',{headers:{'x-admin-key':ADMIN_PASS}});
       if(r.ok) students=(await r.json()).students||[];
-    } catch {}
+    } catch(e){ console.warn('Could not reach server:',e); }
+
+    // Update stats
     document.getElementById('a-students').textContent=students.length;
     document.getElementById('hero-count').textContent=students.length;
 
-    // count total classes across all students
     let totalClasses=0;
     students.forEach(s=>{ totalClasses+=studentData.getClasses(s.id).length; });
     document.getElementById('a-classes').textContent=totalClasses;
 
-    // student list
-    const listEl=document.getElementById('a-student-list');
-    listEl.innerHTML=students.length?students.map(s=>`
-      <div class="student-row">
-        <div><div class="student-name">${s.firstName} ${s.lastName}</div><div class="student-meta">${s.email} · Grade ${s.grade||'—'}</div></div>
-        <div class="student-meta">${new Date(s.createdAt).toLocaleDateString()}</div>
-      </div>`).join(''):'<div class="empty-state">No one signed up yet!</div>';
+    // Count published courses
+    try{
+      const courses=JSON.parse(localStorage.getItem('ss_courses'))||[];
+      document.getElementById('a-courses').textContent=courses.filter(c=>c.published).length;
+    } catch{ document.getElementById('a-courses').textContent=0; }
 
-    // student selects
-    const opts='<option value="">Pick student…</option>'+students.map(s=>`<option value="${s.id}">${s.firstName} ${s.lastName}</option>`).join('');
+    // Student list — show real data from server
+    const listEl=document.getElementById('a-student-list');
+    if(students.length){
+      listEl.innerHTML=students.map(s=>{
+        const joined=new Date(s.createdAt).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'});
+        const classCnt=studentData.getClasses(s.id).length;
+        return `<div class="student-row">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0">${(s.firstName?.[0]||'')+(s.lastName?.[0]||'')}</div>
+            <div>
+              <div class="student-name">${s.firstName} ${s.lastName}</div>
+              <div class="student-meta">${s.email} · Grade ${s.grade||'—'} · ${classCnt} class${classCnt!==1?'es':''} booked</div>
+            </div>
+          </div>
+          <div class="student-meta" style="text-align:right">Joined<br>${joined}</div>
+        </div>`;
+      }).join('');
+    } else {
+      listEl.innerHTML='<div class="empty-state" style="padding:1rem;text-align:center">No one has signed up yet — share the site! 🚀</div>';
+    }
+
+    // Populate student dropdowns
+    const opts='<option value="">Pick student…</option>'+students.map(s=>`<option value="${s.id}">${s.firstName} ${s.lastName} (${s.email})</option>`).join('');
     document.getElementById('a-stud-sel').innerHTML=opts;
     document.getElementById('a-grade-stud').innerHTML=opts;
     renderAdminClassList();
@@ -1022,7 +1049,11 @@
   // ── init ──────────────────────────────────────────────────────
   (async()=>{
     fetchCount();
-    if(store.token){
+    // Restore admin session if navigated back from another page
+    if(sessionStorage.getItem('ss_admin')==='1'){
+      isAdmin=true;
+      showPill({firstName:'Admin',lastName:''});
+    } else if(store.token){
       try{
         const r=await fetch(API+'/me',{headers:{Authorization:'Bearer '+store.token}});
         if(r.ok){const d=await r.json();showPill(d.user);}
