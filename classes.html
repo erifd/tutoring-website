@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Classes — SmartScope</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0D1117;--surface:#161B22;--surface2:#1C2333;--border:#30363D;
+      --accent:#4F6EF7;--accent2:#7C3AED;--green:#22C55E;--yellow:#F59E0B;--red:#EF4444;
+      --text:#E6EDF3;--muted:#8B949E;--white:#fff;
+      --grad:linear-gradient(135deg,#4F6EF7,#7C3AED);
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px}
+
+    /* TOP BAR */
+    header{background:rgba(13,17,23,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5vw;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Nunito',sans-serif;font-size:1.25rem;font-weight:900;text-decoration:none;color:var(--text)}
+    .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .back-link{font-size:0.85rem;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s}
+    .back-link:hover{color:var(--text)}
+    .user-info{display:flex;align-items:center;gap:10px;font-size:0.85rem;color:var(--muted)}
+    .user-av{width:30px;height:30px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--white)}
+
+    /* LAYOUT */
+    .page{max-width:1100px;margin:0 auto;padding:2.5rem 5vw}
+    .page-title{font-family:'Nunito',sans-serif;font-size:1.8rem;font-weight:900;margin-bottom:0.3rem}
+    .page-sub{font-size:0.92rem;color:var(--muted);margin-bottom:2.2rem}
+
+    /* TABS */
+    .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:2rem}
+    .tab{background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:0.92rem;font-weight:700;padding:0.7rem 1.4rem;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all 0.2s}
+    .tab.on{color:var(--text);border-bottom-color:var(--accent)}
+    .tab-panel{display:none}.tab-panel.on{display:block}
+
+    /* LIVE BANNER */
+    .live-banner{background:linear-gradient(135deg,#15803D22,#22C55E11);border:1px solid #22C55E44;border-radius:16px;padding:1.4rem 1.8rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;animation:pulseBorder 2s ease-in-out infinite}
+    @keyframes pulseBorder{0%,100%{border-color:#22C55E44}50%{border-color:#22C55E99}}
+    .live-left{display:flex;align-items:center;gap:14px}
+    .live-dot{width:12px;height:12px;background:var(--green);border-radius:50%;position:relative;flex-shrink:0}
+    .live-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:var(--green);opacity:0.3;animation:ping 1.5s ease-in-out infinite}
+    @keyframes ping{0%{transform:scale(1);opacity:0.3}100%{transform:scale(2);opacity:0}}
+    .live-label{font-family:'Nunito',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:3px}
+    .live-name{font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:800}
+    .live-meta{font-size:0.82rem;color:var(--muted);margin-top:2px}
+    .join-btn{background:var(--green);color:var(--white);border:none;padding:0.7rem 1.6rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800;cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-block;white-space:nowrap}
+    .join-btn:hover{background:#16A34A;transform:scale(1.03)}
+    .join-btn:disabled,.join-btn.inactive{background:var(--surface2);color:var(--muted);cursor:default;transform:none}
+
+    /* CLASS CARDS */
+    .classes-grid{display:flex;flex-direction:column;gap:0.9rem}
+    .class-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;transition:border-color 0.2s}
+    .class-card:hover{border-color:#4F6EF755}
+    .class-card.live-card{border-color:#22C55E55;background:linear-gradient(135deg,#15803D11,#161B22)}
+    .class-card.soon-card{border-color:#F59E0B44}
+    .cc-left{display:flex;align-items:center;gap:14px}
+    .cc-status{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .cc-status.live{background:var(--green)}
+    .cc-status.soon{background:var(--yellow)}
+    .cc-status.sched{background:var(--border)}
+    .cc-subj{font-family:'Nunito',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px}
+    .cc-subj.math{color:#60A5FA}.cc-subj.sci{color:#34D399}.cc-subj.lang{color:#F472B6}.cc-subj.cs{color:#A78BFA}.cc-subj.fr{color:#FB923C}.cc-subj.other{color:var(--muted)}
+    .cc-name{font-size:0.96rem;font-weight:600}
+    .cc-time{font-size:0.78rem;color:var(--muted);margin-top:2px}
+    .cc-tutor{font-size:0.78rem;color:var(--muted)}
+    .cc-actions{display:flex;align-items:center;gap:0.8rem;flex-shrink:0}
+    .cc-badge{font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:100px;background:var(--surface2);color:var(--muted)}
+    .cc-badge.live{background:#22C55E22;color:var(--green)}
+    .cc-badge.soon{background:#F59E0B22;color:var(--yellow)}
+
+    /* CALENDAR */
+    .cal-outer{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+    .cal-head{background:var(--surface2);padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+    .cal-month-label{font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800}
+    .cal-nav{display:flex;gap:6px}
+    .cal-nav button{background:var(--surface);border:1px solid var(--border);color:var(--text);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:0.9rem;transition:all 0.2s}
+    .cal-nav button:hover{background:var(--accent);border-color:var(--accent);color:var(--white)}
+    .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg);border-bottom:1px solid var(--border)}
+    .cal-wd{text-align:center;font-size:0.7rem;font-weight:700;color:var(--muted);padding:0.6rem 0;letter-spacing:0.05em}
+    .cal-body{display:grid;grid-template-columns:repeat(7,1fr)}
+    .cal-cell{min-height:80px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:5px 6px;cursor:pointer;transition:background 0.15s;position:relative}
+    .cal-cell:nth-child(7n){border-right:none}
+    .cal-cell:last-child,.cal-cell:nth-last-child(-n+7):nth-child(7n+1)~*{border-bottom:none}
+    .cal-cell:hover{background:rgba(79,110,247,0.07)}
+    .cal-cell.empty{cursor:default;background:rgba(0,0,0,0.15)}
+    .cal-cell.empty:hover{background:rgba(0,0,0,0.15)}
+    .cal-cell.today .cal-dn{background:var(--accent);color:var(--white);border-radius:6px}
+    .cal-cell.has-ev{background:rgba(79,110,247,0.05)}
+    .cal-dn{font-size:0.75rem;font-weight:600;color:var(--muted);padding:2px 4px;display:inline-block;margin-bottom:3px}
+    .cal-ev{font-size:0.62rem;font-weight:700;border-radius:5px;padding:2px 6px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ev-blue{background:#1D4ED822;color:#93C5FD;border-left:2px solid #3B82F6}
+    .ev-green{background:#15803D22;color:#86EFAC;border-left:2px solid #22C55E}
+    .ev-yellow{background:#92400E22;color:#FCD34D;border-left:2px solid #F59E0B}
+    .cal-add-hint{position:absolute;bottom:4px;right:5px;font-size:0.55rem;color:var(--border);opacity:0}
+    .cal-cell:hover .cal-add-hint{opacity:1}
+
+    /* BOOK MODAL */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;align-items:center;justify-content:center;padding:1rem}
+    .modal-bg.open{display:flex}
+    .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;width:380px;max-width:100%;position:relative;animation:slideUp 0.2s ease}
+    @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .mc-close{position:absolute;top:1rem;right:1.2rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer}
+    .mc-close:hover{color:var(--text)}
+    .mc-title{font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:0.2rem}
+    .mc-date{font-size:0.82rem;color:var(--muted);margin-bottom:1.3rem}
+    .mf{margin-bottom:0.9rem}
+    .mf label{font-size:0.78rem;font-weight:600;display:block;margin-bottom:0.3rem;color:var(--muted)}
+    .mf input,.mf select,.mf textarea{width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s}
+    .mf input:focus,.mf select:focus,.mf textarea:focus{border-color:var(--accent)}
+    .mf select option{background:var(--surface)}
+    .mc-btn{width:100%;background:var(--grad);color:var(--white);border:none;padding:0.8rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;cursor:pointer;margin-top:0.5rem;transition:opacity 0.2s}
+    .mc-btn:hover{opacity:0.88}
+    .mc-note{font-size:0.74rem;color:var(--muted);text-align:center;margin-top:0.6rem}
+    .mc-err{font-size:0.78rem;color:var(--red);margin-top:0.25rem;display:none}
+
+    /* EMPTY STATE */
+    .empty-box{text-align:center;padding:3rem 1rem;color:var(--muted)}
+    .empty-box .ei{font-size:2.5rem;margin-bottom:0.8rem}
+    .empty-box p{font-size:0.9rem;line-height:1.6}
+
+    /* NOT LOGGED IN */
+    .login-prompt{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:3rem;text-align:center;max-width:440px;margin:4rem auto}
+    .login-prompt h2{font-family:'Nunito',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:0.6rem}
+    .login-prompt p{color:var(--muted);font-size:0.92rem;margin-bottom:1.5rem}
+    .lp-btn{display:inline-block;background:var(--grad);color:var(--white);padding:0.75rem 2rem;border-radius:100px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.95rem;text-decoration:none;transition:opacity 0.2s}
+    .lp-btn:hover{opacity:0.85}
+
+    @media(max-width:640px){
+      .live-banner{flex-direction:column;align-items:flex-start}
+      .class-card{flex-direction:column;align-items:flex-start}
+      .cc-actions{width:100%}
+      .join-btn{width:100%;text-align:center}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="tutoring-site.html">Smart<span>Scope</span></a>
+  <div class="user-info">
+    <div class="user-av" id="header-av">?</div>
+    <span id="header-name">Not logged in</span>
+  </div>
+</header>
+
+<!-- BOOK MODAL -->
+<div class="modal-bg" id="book-modal">
+  <div class="modal-card">
+    <button class="mc-close" onclick="closeBook()">✕</button>
+    <div class="mc-title">📅 Request a class</div>
+    <div class="mc-date" id="book-date-label">—</div>
+    <div class="mf"><label>Subject</label>
+      <select id="b-subj">
+        <option value="">What subject?</option>
+        <option>Mathematics</option><option>Physics</option><option>Chemistry</option>
+        <option>Biology</option><option>English / Writing</option><option>Computer Science</option><option>French</option>
+      </select>
+    </div>
+    <div class="mf"><label>Preferred time</label><input type="time" id="b-time" /></div>
+    <div class="mf"><label>What do you need help with?</label><textarea id="b-note" rows="2" placeholder="e.g. chapter 4 review, derivatives…"></textarea></div>
+    <div class="mc-err" id="b-err"></div>
+    <button class="mc-btn" onclick="confirmBook()">Send request 🚀</button>
+    <div class="mc-note">Your tutor will confirm within 24 hours ✌️</div>
+  </div>
+</div>
+
+<div class="page" id="page-content">
+
+  <!-- NOT LOGGED IN STATE -->
+  <div id="not-logged-in" style="display:none">
+    <div class="login-prompt">
+      <div style="font-size:2.5rem;margin-bottom:1rem">🔒</div>
+      <h2>Log in to see your classes</h2>
+      <p>You need a SmartScope account to access your personal schedule and join live sessions.</p>
+      <a class="lp-btn" href="tutoring-site.html">Go to SmartScope →</a>
+    </div>
+  </div>
+
+  <!-- LOGGED IN STATE -->
+  <div id="logged-in-content" style="display:none">
+    <div class="page-title" id="page-greeting">Hey there! 👋</div>
+    <div class="page-sub">Here's what's going on with your classes today.</div>
+
+    <!-- LIVE NOW BANNER (shown if there's a live class) -->
+    <div id="live-banner" style="display:none" class="live-banner">
+      <div class="live-left">
+        <div class="live-dot"></div>
+        <div>
+          <div class="live-label">🔴 Live right now</div>
+          <div class="live-name" id="live-class-name">—</div>
+          <div class="live-meta" id="live-class-meta">—</div>
+        </div>
+      </div>
+      <a class="join-btn" id="live-join-btn" href="#" target="_blank">Join class →</a>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" onclick="showTab('upcoming')">Upcoming</button>
+      <button class="tab" onclick="showTab('calendar')">My calendar</button>
+      <button class="tab" onclick="showTab('past')">Past sessions</button>
+    </div>
+
+    <!-- UPCOMING -->
+    <div class="tab-panel on" id="tab-upcoming">
+      <div class="classes-grid" id="upcoming-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="tab-panel" id="tab-calendar">
+      <div class="cal-outer">
+        <div class="cal-head">
+          <div class="cal-month-label" id="cal-label">—</div>
+          <div class="cal-nav">
+            <button onclick="shiftMonth(-1)">‹</button>
+            <button onclick="shiftMonth(1)">›</button>
+          </div>
+        </div>
+        <div class="cal-weekdays">
+          <div class="cal-wd">Sun</div><div class="cal-wd">Mon</div><div class="cal-wd">Tue</div>
+          <div class="cal-wd">Wed</div><div class="cal-wd">Thu</div><div class="cal-wd">Fri</div><div class="cal-wd">Sat</div>
+        </div>
+        <div class="cal-body" id="cal-body"></div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:0.8rem;text-align:center">Click any day to request a class on that date 👆</p>
+    </div>
+
+    <!-- PAST -->
+    <div class="tab-panel" id="tab-past">
+      <div class="classes-grid" id="past-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const SUBJ_COLOR={'Mathematics':'math','Physics':'sci','Chemistry':'sci','Biology':'sci','English / Writing':'lang','Computer Science':'cs','French':'fr'};
+
+  let calY=new Date().getFullYear(), calM=new Date().getMonth();
+  let pendingDate=null;
+  let currentUser=null;
+
+  function getToken(){return localStorage.getItem('ss_tok');}
+  function getUser(){try{return JSON.parse(localStorage.getItem('ss_user'));}catch{return null;}}
+  function getClasses(uid){try{return JSON.parse(localStorage.getItem('ss_cal_'+uid))||[];}catch{return[];}}
+
+  function ini(u){return((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase();}
+
+  function subjColor(s){return SUBJ_COLOR[s]||'other';}
+
+  function showTab(name){
+    document.querySelectorAll('.tab').forEach((t,i)=>{
+      const names=['upcoming','calendar','past'];
+      t.classList.toggle('on',names[i]===name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
+    document.getElementById('tab-'+name).classList.add('on');
+    if(name==='calendar')renderCal();
+  }
+
+  function shiftMonth(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCal();}
+
+  function renderCal(){
+    document.getElementById('cal-label').textContent=MONTHS[calM]+' '+calY;
+    const body=document.getElementById('cal-body');
+    body.innerHTML='';
+    const today=new Date();
+    const firstDay=new Date(calY,calM,1).getDay();
+    const days=new Date(calY,calM+1,0).getDate();
+    const uid=currentUser?.id||'';
+    const classes=getClasses(uid);
+    const byDate={};
+    classes.forEach(c=>{if(!byDate[c.date])byDate[c.date]=[];byDate[c.date].push(c);});
+
+    for(let i=0;i<firstDay;i++){const d=document.createElement('div');d.className='cal-cell empty';body.appendChild(d);}
+    for(let d=1;d<=days;d++){
+      const key=calY+'-'+(calM+1)+'-'+d;
+      const evs=byDate[key]||[];
+      const isToday=today.getFullYear()===calY&&today.getMonth()===calM&&today.getDate()===d;
+      const cell=document.createElement('div');
+      cell.className='cal-cell'+(isToday?' today':'')+(evs.length?' has-ev':'');
+      let html=`<span class="cal-dn">${d}</span>`;
+      evs.forEach(e=>{
+        const cls=e.status==='live'?'ev-green':e.status==='soon'?'ev-yellow':'ev-blue';
+        html+=`<div class="cal-ev ${cls}">${e.subject}</div>`;
+      });
+      html+=`<span class="cal-add-hint">+ add</span>`;
+      cell.innerHTML=html;
+      cell.onclick=()=>openBook(calY,calM+1,d);
+      body.appendChild(cell);
+    }
+  }
+
+  function openBook(y,m,d){
+    pendingDate={y,m,d,key:y+'-'+m+'-'+d};
+    const label=new Date(y,m-1,d).toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+    document.getElementById('book-date-label').textContent=label;
+    document.getElementById('b-subj').value='';
+    document.getElementById('b-time').value='';
+    document.getElementById('b-note').value='';
+    document.getElementById('b-err').style.display='none';
+    document.getElementById('book-modal').classList.add('open');
+  }
+  function closeBook(){document.getElementById('book-modal').classList.remove('open');}
+
+  function confirmBook(){
+    const subj=document.getElementById('b-subj').value;
+    const time=document.getElementById('b-time').value;
+    const note=document.getElementById('b-note').value;
+    const err=document.getElementById('b-err');
+    if(!subj||!time){err.textContent='Pick a subject and time!';err.style.display='block';return;}
+    const uid=currentUser?.id||'';
+    const classes=getClasses(uid);
+    classes.push({date:pendingDate.key,subject:subj,time,note,status:'scheduled',tutor:'',link:''});
+    localStorage.setItem('ss_cal_'+uid,JSON.stringify(classes));
+    closeBook();
+    renderUpcoming();
+    renderCal();
+  }
+
+  function statusBadge(s){
+    if(s==='live')return`<span class="cc-badge live">🔴 Live</span>`;
+    if(s==='soon')return`<span class="cc-badge soon">⏳ Soon</span>`;
+    return`<span class="cc-badge">Scheduled</span>`;
+  }
+
+  function renderUpcoming(){
+    const uid=currentUser?.id||'';
+    const all=getClasses(uid);
+    const today=new Date(); today.setHours(0,0,0,0);
+    const upcoming=all.filter(c=>{const d=new Date(c.date.replace(/-/g,'/'));return d>=today;})
+      .sort((a,b)=>new Date(a.date.replace(/-/g,'/'))-new Date(b.date.replace(/-/g,'/')));
+    const el=document.getElementById('upcoming-list');
+
+    // live banner
+    const live=upcoming.find(c=>c.status==='live');
+    if(live){
+      document.getElementById('live-banner').style.display='flex';
+      document.getElementById('live-class-name').textContent=live.subject;
+      document.getElementById('live-class-meta').textContent=(live.tutor?'with '+live.tutor+' · ':'')+live.time;
+      const jb=document.getElementById('live-join-btn');
+      if(live.link){jb.href=live.link;jb.classList.remove('inactive');}
+      else{jb.href='#';jb.classList.add('inactive');jb.textContent='Link coming soon';}
+    } else {
+      document.getElementById('live-banner').style.display='none';
+    }
+
+    if(!upcoming.length){
+      el.innerHTML=`<div class="empty-box"><div class="ei">📭</div><p>No upcoming classes yet.<br>Click <b>My calendar</b> to book your first one!</p></div>`;
+      return;
+    }
+
+    el.innerHTML=upcoming.map((c,i)=>{
+      const d=new Date(c.date.replace(/-/g,'/')).toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+      const clsCard=c.status==='live'?'live-card':c.status==='soon'?'soon-card':'';
+      const dotCls=c.status==='live'?'live':c.status==='soon'?'soon':'sched';
+      const btnHtml=c.status==='live'&&c.link
+        ?`<a class="join-btn" href="${c.link}" target="_blank">Join →</a>`
+        :c.status==='soon'?`<button class="join-btn inactive" disabled>Starting soon</button>`
+        :`<button class="join-btn inactive" disabled>Scheduled</button>`;
+      return`<div class="class-card ${clsCard}">
+        <div class="cc-left">
+          <div class="cc-status ${dotCls}"></div>
+          <div>
+            <div class="cc-subj ${subjColor(c.subject)}">${c.subject}</div>
+            <div class="cc-name">${d}${c.time?' at '+c.time:''}</div>
+            <div class="cc-time">${c.note||'No notes added'}${c.tutor?' · with '+c.tutor:''}</div>
+          </div>
+        </div>
+        <div class="cc-actions">${statusBadge(c.status)}${btnHtml}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderPast(){
+    const uid=currentUser?.id||'';
+    const all=getClasses(uid);
+    const today=new Date(); today.setHours(0,0,0,0);
+    const past=all.filter(c=>{const d=new Date(c.date.replace(/-/g,'/'));return d<today;})
+      .sort((a,b)=>new Date(b.date.replace(/-/g,'/'))-new Date(a.date.replace(/-/g,'/')));
+    const el=document.getElementById('past-list');
+    if(!past.length){el.innerHTML=`<div class="empty-box"><div class="ei">🕐</div><p>No past sessions yet — your completed classes will show up here.</p></div>`;return;}
+    el.innerHTML=past.map(c=>{
+      const d=new Date(c.date.replace(/-/g,'/')).toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+      return`<div class="class-card" style="opacity:0.65">
+        <div class="cc-left">
+          <div class="cc-status sched"></div>
+          <div>
+            <div class="cc-subj ${subjColor(c.subject)}">${c.subject}</div>
+            <div class="cc-name">${d}${c.time?' at '+c.time:''}</div>
+            <div class="cc-time">${c.note||''}${c.tutor?' · with '+c.tutor:''}</div>
+          </div>
+        </div>
+        <span class="cc-badge">Completed</span>
+      </div>`;
+    }).join('');
+  }
+
+  function init(){
+    const user=getUser();
+    const token=getToken();
+    if(!user||!token){
+      document.getElementById('not-logged-in').style.display='block';
+      return;
+    }
+    currentUser=user;
+    document.getElementById('logged-in-content').style.display='block';
+    document.getElementById('page-greeting').textContent=`Hey ${user.firstName}! 👋`;
+    document.getElementById('header-av').textContent=((user.firstName?.[0]||'')+(user.lastName?.[0]||'')).toUpperCase();
+    document.getElementById('header-name').textContent=user.firstName+' '+user.lastName;
+    calY=new Date().getFullYear(); calM=new Date().getMonth();
+    renderUpcoming();
+    renderPast();
+  }
+
+  document.getElementById('book-modal').addEventListener('click',function(e){if(e.target===this)closeBook();});
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Course Builder — SmartScope Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0D1117;--surface:#161B22;--surface2:#1C2333;--border:#30363D;
+      --accent:#4F6EF7;--green:#22C55E;--yellow:#F59E0B;--red:#EF4444;
+      --text:#E6EDF3;--muted:#8B949E;--white:#fff;
+      --grad:linear-gradient(135deg,#4F6EF7,#7C3AED);
+    }
+    html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+
+    /* HEADER */
+    header{background:rgba(13,17,23,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5vw;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:900;text-decoration:none;color:var(--text)}
+    .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .admin-tag{background:var(--accent);color:var(--white);font-size:0.65rem;font-weight:800;padding:2px 9px;border-radius:100px;letter-spacing:0.06em;margin-left:8px}
+    .header-right{display:flex;align-items:center;gap:0.9rem}
+    .hbtn{padding:0.42rem 1rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;text-decoration:none;border:1.5px solid var(--border);color:var(--muted);background:none;transition:all 0.2s}
+    .hbtn:hover{border-color:var(--text);color:var(--text)}
+    .hbtn.accent{background:var(--grad);border:none;color:var(--white)}
+    .hbtn.accent:hover{opacity:0.88}
+
+    /* LOGIN GATE */
+    .gate{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 58px);padding:2rem}
+    .gate-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:380px;max-width:100%;text-align:center}
+    .gate-icon{font-size:2.5rem;margin-bottom:1rem}
+    .gate-title{font-family:'Nunito',sans-serif;font-size:1.4rem;font-weight:900;margin-bottom:0.4rem}
+    .gate-sub{font-size:0.88rem;color:var(--muted);margin-bottom:1.6rem}
+    .gf{margin-bottom:0.9rem;text-align:left}
+    .gf label{font-size:0.78rem;font-weight:600;display:block;margin-bottom:0.28rem;color:var(--muted)}
+    .gf input{width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.92rem;color:var(--text);outline:none;transition:border-color 0.2s}
+    .gf input:focus{border-color:var(--accent)}
+    .gbtn{width:100%;background:var(--grad);color:var(--white);border:none;padding:0.8rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;cursor:pointer;transition:opacity 0.2s;margin-top:0.3rem}
+    .gbtn:hover{opacity:0.85}
+    .g-err{font-size:0.8rem;color:var(--red);margin-top:0.5rem;display:none}
+
+    /* MAIN */
+    .main{max-width:1140px;margin:0 auto;padding:2.5rem 5vw;display:none}
+    .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:gap}
+    .page-title{font-family:'Nunito',sans-serif;font-size:1.7rem;font-weight:900}
+    .page-sub{font-size:0.88rem;color:var(--muted);margin-top:0.2rem}
+    .new-course-btn{background:var(--grad);color:var(--white);border:none;padding:0.65rem 1.4rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:800;cursor:pointer;transition:opacity 0.2s;white-space:nowrap}
+    .new-course-btn:hover{opacity:0.85}
+
+    /* COURSE GRID */
+    .courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.2rem;margin-bottom:3rem}
+    .course-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:1.4rem;transition:border-color 0.2s;position:relative}
+    .course-card:hover{border-color:#4F6EF755}
+    .cc-status-pill{position:absolute;top:1rem;right:1rem;font-size:0.65rem;font-weight:800;padding:3px 10px;border-radius:100px;letter-spacing:0.06em}
+    .pill-draft{background:#92400E33;color:var(--yellow)}
+    .pill-live{background:#15803D33;color:var(--green)}
+    .cc-subject{font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem}
+    .cc-name{font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:0.3rem;padding-right:70px}
+    .cc-meta{font-size:0.78rem;color:var(--muted);margin-bottom:1rem}
+    .cc-lessons{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:1rem}
+    .cc-lesson-row{display:flex;align-items:center;gap:8px;font-size:0.8rem;padding:0.35rem 0.6rem;background:var(--bg);border-radius:8px}
+    .ll-num{width:20px;height:20px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--muted);flex-shrink:0}
+    .ll-name{flex:1;font-weight:500}
+    .ll-q{font-size:0.7rem;color:var(--yellow)}
+    .ll-done{color:var(--green);font-size:0.75rem}
+    .ll-pending{color:var(--muted);font-size:0.75rem}
+    .cc-actions{display:flex;gap:0.6rem;flex-wrap:wrap}
+    .cc-btn{padding:0.4rem 0.9rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:none;transition:all 0.2s}
+    .cc-btn:hover{border-color:var(--text);color:var(--text)}
+    .cc-btn.primary{background:var(--grad);border:none;color:var(--white)}
+    .cc-btn.primary:hover{opacity:0.85}
+    .cc-btn.danger{border-color:#EF444433;color:var(--red)}
+    .cc-btn.danger:hover{background:#EF444411}
+    .cc-btn.publish{background:#15803D22;border-color:var(--green);color:var(--green)}
+    .cc-btn.publish:hover{background:#15803D44}
+    .cc-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+    /* MODALS */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
+    .overlay.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:700px;max-width:100%;max-height:90vh;overflow-y:auto;animation:popIn 0.22s ease;position:relative}
+    @keyframes popIn{from{transform:scale(0.96)translateY(10px);opacity:0}to{transform:scale(1)translateY(0);opacity:1}}
+    .modal-head{background:var(--surface2);border-bottom:1px solid var(--border);border-radius:20px 20px 0 0;padding:1.3rem 1.6rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+    .modal-title{font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:900}
+    .modal-close{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px}
+    .modal-close:hover{color:var(--text)}
+    .modal-body{padding:1.6rem}
+    .section-head{font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:0.9rem;margin-top:1.4rem}
+    .section-head:first-child{margin-top:0}
+    .field{margin-bottom:1rem}
+    .field label{font-size:0.8rem;font-weight:600;display:block;margin-bottom:0.3rem;color:var(--muted)}
+    .field input,.field select,.field textarea{width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+    .field select option{background:var(--surface2)}
+    .field textarea{min-height:80px;resize:vertical}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem}
+    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem}
+
+    /* LESSON BUILDER */
+    .lesson-block{background:var(--bg);border:1.5px solid var(--border);border-radius:14px;margin-bottom:1rem;overflow:hidden}
+    .lesson-block-head{padding:0.9rem 1.1rem;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;transition:background 0.15s}
+    .lesson-block-head:hover{background:rgba(79,110,247,0.04)}
+    .lb-num{width:26px;height:26px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:var(--muted);flex-shrink:0}
+    .lb-name{flex:1;font-size:0.9rem;font-weight:600}
+    .lb-status{font-size:0.72rem;padding:2px 8px;border-radius:100px}
+    .lb-status.ready{background:#15803D22;color:var(--green)}
+    .lb-status.draft{background:#92400E22;color:var(--yellow)}
+    .lb-chevron{color:var(--muted);transition:transform 0.2s;font-size:0.8rem}
+    .lb-body{display:none;padding:1.1rem;border-top:1px solid var(--border)}
+    .lb-body.open{display:block}
+
+    /* VIDEO UPLOAD */
+    .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(79,110,247,0.04)}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .uz-icon{font-size:2rem;margin-bottom:0.5rem}
+    .uz-text{font-size:0.88rem;font-weight:600;margin-bottom:0.25rem}
+    .uz-sub{font-size:0.75rem;color:var(--muted)}
+    .upload-progress{height:4px;background:var(--border);border-radius:2px;margin-top:0.8rem;overflow:hidden;display:none}
+    .upload-progress-fill{height:100%;background:var(--grad);border-radius:2px;transition:width 0.3s}
+    .file-ready{display:none;background:#15803D11;border:1px solid #22C55E44;border-radius:10px;padding:0.65rem 1rem;font-size:0.82rem;color:var(--green);display:flex;align-items:center;gap:8px;margin-top:0.6rem}
+    .file-ready{display:none}
+
+    /* QUESTIONS */
+    .q-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:0.8rem;position:relative}
+    .q-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem}
+    .q-num{font-size:0.72rem;font-weight:700;color:var(--accent);letter-spacing:0.06em}
+    .q-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:2px 6px;border-radius:6px;transition:all 0.2s}
+    .q-del:hover{background:#EF444422;color:var(--red)}
+    .q-type-row{display:flex;gap:0.6rem;margin-bottom:0.8rem;flex-wrap:wrap}
+    .q-type-btn{padding:0.3rem 0.85rem;border-radius:100px;font-size:0.75rem;font-weight:700;border:1.5px solid var(--border);color:var(--muted);cursor:pointer;background:none;transition:all 0.2s}
+    .q-type-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(79,110,247,0.1)}
+    .choices-wrap{display:flex;flex-direction:column;gap:0.5rem;margin-top:0.7rem}
+    .choice-row{display:flex;align-items:center;gap:0.6rem}
+    .choice-letter{width:24px;height:24px;border-radius:6px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--muted);flex-shrink:0}
+    .choice-input{flex:1;padding:0.5rem 0.75rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--text);outline:none;transition:border-color 0.2s}
+    .choice-input:focus{border-color:var(--accent)}
+    .correct-radio{accent-color:var(--green);cursor:pointer;width:15px;height:15px}
+    .correct-label{font-size:0.68rem;color:var(--muted);white-space:nowrap}
+    .add-choice-btn,.remove-choice-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:0.28rem 0.7rem;border-radius:8px;font-size:0.72rem;cursor:pointer;transition:all 0.2s}
+    .add-choice-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .remove-choice-btn:hover{border-color:var(--red);color:var(--red)}
+    .sa-answer{width:100%;padding:0.5rem 0.75rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--text);outline:none;margin-top:0.7rem;transition:border-color 0.2s}
+    .sa-answer:focus{border-color:var(--green)}
+    .add-q-btn{background:none;border:1.5px dashed var(--border);color:var(--muted);width:100%;padding:0.65rem;border-radius:10px;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:0.4rem}
+    .add-q-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+    /* MARK COMPLETE */
+    .complete-bar{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.3rem;display:flex;align-items:center;justify-content:space-between;margin-top:1rem;gap:1rem;flex-wrap:wrap}
+    .cb-text{font-size:0.85rem}
+    .cb-text strong{font-family:'Nunito',sans-serif}
+    .cb-check{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);cursor:pointer;user-select:none}
+    .cb-check input{accent-color:var(--green);width:15px;height:15px;cursor:pointer}
+    .complete-lesson-btn{background:var(--green);color:var(--white);border:none;padding:0.55rem 1.2rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+    .complete-lesson-btn:hover{background:#16A34A}
+    .complete-lesson-btn:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed}
+
+    /* MODAL FOOTER */
+    .modal-footer{padding:1.2rem 1.6rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;position:sticky;bottom:0;background:var(--surface);border-radius:0 0 20px 20px}
+    .mf-left{font-size:0.8rem;color:var(--muted)}
+    .mf-right{display:flex;gap:0.7rem}
+    .save-btn{background:var(--accent);color:var(--white);border:none;padding:0.6rem 1.4rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:opacity 0.2s}
+    .save-btn:hover{opacity:0.85}
+    .publish-btn{background:var(--green);color:var(--white);border:none;padding:0.6rem 1.4rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:all 0.2s}
+    .publish-btn:hover{background:#16A34A}
+    .publish-btn:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed}
+    .cancel-btn{background:none;border:1.5px solid var(--border);color:var(--muted);padding:0.6rem 1.2rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s}
+    .cancel-btn:hover{border-color:var(--text);color:var(--text)}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:2rem;right:2rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.8rem 1.2rem;font-size:0.85rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.success{border-color:#22C55E55;color:var(--green)}
+    .toast.error{border-color:#EF444455;color:var(--red)}
+
+    /* EMPTY */
+    .empty-courses{text-align:center;padding:4rem 2rem;color:var(--muted)}
+    .empty-courses .ei{font-size:3rem;margin-bottom:1rem}
+
+    @media(max-width:640px){.two-col,.three-col{grid-template-columns:1fr}.courses-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:6px">
+    <a class="logo" href="tutoring-site.html">Smart<span>Scope</span></a>
+    <span class="admin-tag">ADMIN</span>
+  </div>
+  <div class="header-right">
+    <a class="hbtn" href="tutoring-site.html">← Back to site</a>
+    <a class="hbtn" href="video.html" id="preview-link">Preview player</a>
+    <button class="hbtn accent" onclick="doLogout()" id="logout-btn" style="display:none">Log out</button>
+  </div>
+</header>
+
+<!-- LOGIN GATE -->
+<div class="gate" id="login-gate">
+  <div class="gate-box">
+    <div class="gate-icon">🔐</div>
+    <div class="gate-title">Admin Access</div>
+    <div class="gate-sub">This area is for SmartScope admins only.</div>
+    <div class="gf"><label>Email</label><input type="email" id="g-email" placeholder="admin@smartscope.com" /></div>
+    <div class="gf"><label>Password</label><input type="password" id="g-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAdminLogin()" /></div>
+    <div class="g-err" id="g-err">Wrong credentials.</div>
+    <button class="gbtn" onclick="doAdminLogin()">Enter →</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="main-content">
+  <div class="page-head">
+    <div>
+      <div class="page-title">Course Builder 🎬</div>
+      <div class="page-sub">Create courses, upload videos, write questions — publish when ready.</div>
+    </div>
+    <button class="new-course-btn" onclick="openNewCourse()">+ New course</button>
+  </div>
+  <div class="courses-grid" id="courses-grid"></div>
+</div>
+
+<!-- NEW / EDIT COURSE MODAL -->
+<div class="overlay" id="course-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title-text">New Course</div>
+      <button class="modal-close" onclick="closeCourseModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-head">Course info</div>
+      <div class="two-col">
+        <div class="field"><label>Course name</label><input type="text" id="c-name" placeholder="e.g. Algebra & Geometry Bundle" /></div>
+        <div class="field"><label>Subject</label>
+          <select id="c-subject">
+            <option>Mathematics</option><option>Physics</option><option>Chemistry</option>
+            <option>Biology</option><option>English / Writing</option><option>Computer Science</option><option>French</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Description</label><textarea id="c-desc" placeholder="What will students learn?"></textarea></div>
+      <div class="two-col">
+        <div class="field"><label>Price ($)</label><input type="number" id="c-price" placeholder="12" min="0" step="0.01" /></div>
+        <div class="field"><label>Grade range</label><input type="text" id="c-grades" placeholder="e.g. 7–10" /></div>
+      </div>
+
+      <div class="section-head" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Lessons</span>
+        <button class="add-choice-btn" onclick="addLesson()" style="font-size:0.75rem">+ Add lesson</button>
+      </div>
+      <div id="lessons-container"></div>
+
+      <div style="margin-top:0.5rem">
+        <button class="add-q-btn" onclick="addLesson()">+ Add another lesson</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left" id="publish-status">Complete all lessons to publish.</div>
+      <div class="mf-right">
+        <button class="cancel-btn" onclick="closeCourseModal()">Cancel</button>
+        <button class="save-btn" onclick="saveCourse()">Save draft</button>
+        <button class="publish-btn" id="publish-btn" onclick="publishCourse()" disabled>🚀 Publish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_EMAIL = 'admin@smartscope.com';
+const ADMIN_PASS  = 'Admin2026!';
+
+// ── Auth ─────────────────────────────────────────────────────────
+function doAdminLogin() {
+  const e = document.getElementById('g-email').value.trim();
+  const p = document.getElementById('g-pass').value;
+  if (e === ADMIN_EMAIL && p === ADMIN_PASS) {
+    sessionStorage.setItem('ss_admin', '1');
+    document.getElementById('login-gate').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('logout-btn').style.display = '';
+    renderCourses();
+  } else {
+    document.getElementById('g-err').style.display = 'block';
+  }
+}
+function doLogout() { sessionStorage.removeItem('ss_admin'); location.reload(); }
+
+// ── Data ─────────────────────────────────────────────────────────
+function getCourses() { try { return JSON.parse(localStorage.getItem('ss_courses')) || []; } catch { return []; } }
+function saveCourses(c) { localStorage.setItem('ss_courses', JSON.stringify(c)); }
+
+// ── State for modal ───────────────────────────────────────────────
+let editingIdx = -1; // -1 = new
+let lessons = []; // array of lesson objects being edited
+
+// ── Render course grid ────────────────────────────────────────────
+function renderCourses() {
+  const courses = getCourses();
+  const grid = document.getElementById('courses-grid');
+  if (!courses.length) {
+    grid.innerHTML = `<div class="empty-courses" style="grid-column:1/-1"><div class="ei">🎬</div><p>No courses yet. Click <b>+ New course</b> to create your first one.</p></div>`;
+    return;
+  }
+  grid.innerHTML = courses.map((c, i) => {
+    const allDone = c.lessons.every(l => l.complete);
+    const doneCount = c.lessons.filter(l => l.complete).length;
+    const lessonsHtml = c.lessons.map((l, li) => `
+      <div class="cc-lesson-row">
+        <div class="ll-num">${li+1}</div>
+        <div class="ll-name">${l.name || 'Untitled lesson'}</div>
+        <div class="ll-q">${l.questions?.length ? l.questions.length+'q' : ''}</div>
+        <div class="${l.complete ? 'll-done' : 'll-pending'}">${l.complete ? '✓' : '○'}</div>
+      </div>`).join('');
+    return `<div class="course-card">
+      <div class="cc-status-pill ${c.published ? 'pill-live' : 'pill-draft'}">${c.published ? '🟢 LIVE' : '📝 DRAFT'}</div>
+      <div class="cc-subject">${c.subject}</div>
+      <div class="cc-name">${c.name}</div>
+      <div class="cc-meta">${c.lessons.length} lesson${c.lessons.length!==1?'s':''} · ${doneCount}/${c.lessons.length} complete · $${c.price||'—'}</div>
+      <div class="cc-lessons">${lessonsHtml}</div>
+      <div class="cc-actions">
+        <button class="cc-btn primary" onclick="openEditCourse(${i})">Edit</button>
+        ${!c.published && allDone ? `<button class="cc-btn publish" onclick="quickPublish(${i})">🚀 Publish</button>` : ''}
+        ${c.published ? `<button class="cc-btn" onclick="unpublish(${i})">Unpublish</button>` : ''}
+        <a class="cc-btn" href="video.html?course=custom&idx=${i}" target="_blank">Preview</a>
+        <button class="cc-btn danger" onclick="deleteCourse(${i})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function quickPublish(i) {
+  const courses = getCourses();
+  const c = courses[i];
+  if (!c.lessons.every(l => l.complete)) { toast('Complete all lessons first!', 'error'); return; }
+  c.published = true;
+  saveCourses(courses);
+  renderCourses();
+  toast('Course is now live! 🎉', 'success');
+}
+function unpublish(i) {
+  const courses = getCourses();
+  courses[i].published = false;
+  saveCourses(courses);
+  renderCourses();
+  toast('Course moved back to draft.', 'success');
+}
+function deleteCourse(i) {
+  if (!confirm('Delete this course? This cannot be undone.')) return;
+  const courses = getCourses();
+  courses.splice(i, 1);
+  saveCourses(courses);
+  renderCourses();
+  toast('Course deleted.', 'success');
+}
+
+// ── Modal open/close ──────────────────────────────────────────────
+function openNewCourse() {
+  editingIdx = -1;
+  lessons = [newLesson()];
+  document.getElementById('modal-title-text').textContent = 'New Course';
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-subject').value = 'Mathematics';
+  document.getElementById('c-desc').value = '';
+  document.getElementById('c-price').value = '';
+  document.getElementById('c-grades').value = '';
+  renderLessons();
+  checkPublishReady();
+  document.getElementById('course-modal').classList.add('open');
+}
+
+function openEditCourse(i) {
+  editingIdx = i;
+  const c = getCourses()[i];
+  lessons = JSON.parse(JSON.stringify(c.lessons)); // deep copy
+  document.getElementById('modal-title-text').textContent = 'Edit Course';
+  document.getElementById('c-name').value = c.name || '';
+  document.getElementById('c-subject').value = c.subject || 'Mathematics';
+  document.getElementById('c-desc').value = c.desc || '';
+  document.getElementById('c-price').value = c.price || '';
+  document.getElementById('c-grades').value = c.grades || '';
+  renderLessons();
+  checkPublishReady();
+  document.getElementById('course-modal').classList.add('open');
+}
+
+function closeCourseModal() { document.getElementById('course-modal').classList.remove('open'); }
+
+// ── Lesson helpers ────────────────────────────────────────────────
+function newLesson() {
+  return { name: '', videoUrl: '', videoName: '', duration: 0, questions: [], complete: false, _open: true };
+}
+
+function addLesson() {
+  lessons.push(newLesson());
+  renderLessons();
+  checkPublishReady();
+}
+
+function removeLesson(i) {
+  if (!confirm('Remove this lesson?')) return;
+  lessons.splice(i, 1);
+  renderLessons();
+  checkPublishReady();
+}
+
+function toggleLesson(i) {
+  lessons[i]._open = !lessons[i]._open;
+  renderLessons();
+}
+
+// ── Render all lessons ────────────────────────────────────────────
+function renderLessons() {
+  const container = document.getElementById('lessons-container');
+  container.innerHTML = lessons.map((l, i) => buildLessonHTML(l, i)).join('');
+}
+
+function buildLessonHTML(l, i) {
+  const statusClass = l.complete ? 'ready' : 'draft';
+  const statusText  = l.complete ? '✓ Complete' : 'Draft';
+  const qHtml = (l.questions || []).map((q, qi) => buildQuestionHTML(i, qi, q)).join('');
+  const videoHtml = l.videoUrl
+    ? `<div class="file-ready" style="display:flex">✅ ${l.videoName || 'Video uploaded'}</div>`
+    : '';
+  return `<div class="lesson-block">
+    <div class="lesson-block-head" onclick="toggleLesson(${i})">
+      <div class="lb-num">${i+1}</div>
+      <div class="lb-name">${l.name || `Lesson ${i+1}`}</div>
+      <div class="lb-status ${statusClass}">${statusText}</div>
+      <div class="lb-chevron">${l._open ? '▲' : '▼'}</div>
+      <button onclick="event.stopPropagation();removeLesson(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;margin-left:4px" title="Remove">✕</button>
+    </div>
+    <div class="lb-body ${l._open ? 'open' : ''}">
+      <div class="field">
+        <label>Lesson name</label>
+        <input type="text" value="${esc(l.name)}" placeholder="e.g. Introduction to Variables" oninput="lessons[${i}].name=this.value;syncLessonHead(${i})" />
+      </div>
+
+      <div class="section-head">Video</div>
+      <div class="upload-zone" id="uz-${i}" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event,${i})">
+        <input type="file" accept="video/mp4,video/webm,video/*" onchange="handleFileInput(this,${i})" />
+        <div class="uz-icon">🎬</div>
+        <div class="uz-text">Drop your MP4 here or click to browse</div>
+        <div class="uz-sub">MP4 format · max 2GB</div>
+        <div class="upload-progress" id="up-${i}"><div class="upload-progress-fill" id="upf-${i}" style="width:0%"></div></div>
+      </div>
+      ${videoHtml}
+
+      <div class="section-head" style="display:flex;align-items:center;justify-content:space-between;margin-top:1.2rem">
+        <span>Questions</span>
+        <span style="font-size:0.72rem;color:var(--muted)">Video pauses at the timestamp you set</span>
+      </div>
+      <div id="q-container-${i}">${qHtml}</div>
+      <button class="add-q-btn" onclick="addQuestion(${i})">+ Add question</button>
+
+      <div class="complete-bar">
+        <div class="cb-text">
+          <strong>Mark as complete</strong> — video uploaded + questions written? Lock it in.
+        </div>
+        <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap">
+          <label class="cb-check"><input type="checkbox" ${l.complete?'checked':''} onchange="toggleComplete(${i},this.checked)" /> Lesson is ready</label>
+          <button class="complete-lesson-btn" onclick="markComplete(${i})" ${l.complete?'disabled':''}>
+            ${l.complete ? '✓ Done' : 'Mark complete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function syncLessonHead(i) {
+  // update displayed name without full re-render
+  const heads = document.querySelectorAll('.lesson-block-head .lb-name');
+  if (heads[i]) heads[i].textContent = lessons[i].name || `Lesson ${i+1}`;
+  checkPublishReady();
+}
+
+function esc(s) { return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ── Video upload ──────────────────────────────────────────────────
+function handleFileInput(input, lessonIdx) {
+  if (input.files[0]) processVideoFile(input.files[0], lessonIdx);
+}
+
+function handleDrop(e, lessonIdx) {
+  e.preventDefault();
+  document.getElementById('uz-'+lessonIdx).classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('video/')) processVideoFile(file, lessonIdx);
+  else toast('Please drop a video file (MP4).', 'error');
+}
+
+function processVideoFile(file, i) {
+  const pb = document.getElementById('up-'+i);
+  const fill = document.getElementById('upf-'+i);
+  pb.style.display = 'block';
+  // Simulate upload progress (in real deployment, upload to your server/S3)
+  let pct = 0;
+  const interval = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 15, 95);
+    fill.style.width = pct + '%';
+  }, 120);
+
+  // Create blob URL for local playback (real deployment: upload to server)
+  const url = URL.createObjectURL(file);
+  const vid = document.createElement('video');
+  vid.src = url;
+  vid.onloadedmetadata = () => {
+    clearInterval(interval);
+    fill.style.width = '100%';
+    setTimeout(() => { pb.style.display = 'none'; }, 500);
+    lessons[i].videoUrl = url;
+    lessons[i].videoName = file.name;
+    lessons[i].duration = Math.round(vid.duration);
+    lessons[i].complete = false; // reset complete on new upload
+    renderLessons();
+    checkPublishReady();
+    toast(`Video loaded: ${file.name}`, 'success');
+  };
+  vid.onerror = () => {
+    clearInterval(interval);
+    pb.style.display = 'none';
+    toast('Could not read video. Try a different file.', 'error');
+  };
+}
+
+// ── Questions ─────────────────────────────────────────────────────
+function buildQuestionHTML(li, qi, q) {
+  const isMC = q.type !== 'short';
+  const choices = (q.choices || ['','','','']).map((c, ci) => `
+    <div class="choice-row">
+      <div class="choice-letter">${String.fromCharCode(65+ci)}</div>
+      <input class="choice-input" type="text" value="${esc(c)}" placeholder="Choice ${String.fromCharCode(65+ci)}" oninput="lessons[${li}].questions[${qi}].choices[${ci}]=this.value" />
+      <input class="correct-radio" type="radio" name="correct-${li}-${qi}" value="${ci}" ${q.correct===ci?'checked':''} onchange="lessons[${li}].questions[${qi}].correct=${ci}" title="Mark as correct" />
+      <span class="correct-label">✓</span>
+      ${(q.choices||[]).length > 2 ? `<button class="remove-choice-btn" onclick="removeChoice(${li},${qi},${ci})">−</button>` : ''}
+    </div>`).join('');
+
+  const dur = lessons[li].duration || 300;
+  const atVal = q.at || Math.round(dur * 0.3);
+
+  return `<div class="q-block" id="qb-${li}-${qi}">
+    <div class="q-block-head">
+      <div class="q-num">QUESTION ${qi+1}</div>
+      <button class="q-del" onclick="removeQuestion(${li},${qi})" title="Delete question">✕ Delete</button>
+    </div>
+    <div class="q-type-row">
+      <button class="q-type-btn ${isMC?'on':''}" onclick="setQType(${li},${qi},'mc')">Multiple choice</button>
+      <button class="q-type-btn ${!isMC?'on':''}" onclick="setQType(${li},${qi},'short')">Short answer</button>
+    </div>
+    <div class="field" style="margin-bottom:0.8rem">
+      <label>Question text</label>
+      <input type="text" value="${esc(q.text)}" placeholder="What do you want to ask?" oninput="lessons[${li}].questions[${qi}].text=this.value" />
+    </div>
+    <div class="field" style="margin-bottom:0.8rem">
+      <label>Pause video at (seconds into video)</label>
+      <input type="number" value="${atVal}" min="1" max="${dur}" step="1" oninput="lessons[${li}].questions[${qi}].at=parseInt(this.value)||30" style="max-width:160px" />
+      ${dur?`<span style="font-size:0.72rem;color:var(--muted);margin-left:8px">Video is ${fmtS(dur)} long</span>`:''}
+    </div>
+    ${isMC ? `
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem">Answer choices — click ✓ to mark the correct one</div>
+      <div class="choices-wrap" id="choices-${li}-${qi}">${choices}</div>
+      <div style="margin-top:0.5rem;display:flex;gap:0.5rem">
+        ${(q.choices||[]).length < 6 ? `<button class="add-choice-btn" onclick="addChoice(${li},${qi})">+ Add choice</button>` : ''}
+      </div>
+    ` : `
+      <div class="field" style="margin-bottom:0">
+        <label>Expected answer (for reference)</label>
+        <input class="sa-answer" type="text" value="${esc(q.answer||'')}" placeholder="The answer students should give…" oninput="lessons[${li}].questions[${qi}].answer=this.value" />
+      </div>
+    `}
+  </div>`;
+}
+
+function fmtS(s) { const m=Math.floor(s/60),sec=String(s%60).padStart(2,'0'); return m+':'+sec; }
+
+function addQuestion(li) {
+  if (!lessons[li].questions) lessons[li].questions = [];
+  const dur = lessons[li].duration || 300;
+  const existing = lessons[li].questions.map(q=>q.at||0);
+  // place new question in a gap
+  let at = Math.round(dur * 0.5);
+  lessons[li].questions.push({ type:'mc', text:'', choices:['','','',''], correct:0, at, answer:'' });
+  renderLessons();
+}
+
+function removeQuestion(li, qi) {
+  lessons[li].questions.splice(qi, 1);
+  renderLessons();
+}
+
+function setQType(li, qi, type) {
+  lessons[li].questions[qi].type = type;
+  if (type === 'mc' && !lessons[li].questions[qi].choices?.length) {
+    lessons[li].questions[qi].choices = ['','','',''];
+    lessons[li].questions[qi].correct = 0;
+  }
+  renderLessons();
+}
+
+function addChoice(li, qi) {
+  if (!lessons[li].questions[qi].choices) lessons[li].questions[qi].choices = [];
+  if (lessons[li].questions[qi].choices.length < 6) {
+    lessons[li].questions[qi].choices.push('');
+    renderLessons();
+  }
+}
+
+function removeChoice(li, qi, ci) {
+  lessons[li].questions[qi].choices.splice(ci, 1);
+  if (lessons[li].questions[qi].correct >= lessons[li].questions[qi].choices.length)
+    lessons[li].questions[qi].correct = 0;
+  renderLessons();
+}
+
+// ── Complete ──────────────────────────────────────────────────────
+function toggleComplete(i, checked) {
+  lessons[i].complete = checked;
+  checkPublishReady();
+}
+
+function markComplete(i) {
+  const l = lessons[i];
+  if (!l.videoUrl) { toast('Upload a video first!', 'error'); return; }
+  if (!l.name) { toast('Give this lesson a name!', 'error'); return; }
+  l.complete = true;
+  renderLessons();
+  checkPublishReady();
+  toast(`"${l.name}" marked complete ✓`, 'success');
+}
+
+function checkPublishReady() {
+  const allComplete = lessons.length > 0 && lessons.every(l => l.complete);
+  const btn = document.getElementById('publish-btn');
+  const status = document.getElementById('publish-status');
+  if (allComplete) {
+    btn.disabled = false;
+    status.textContent = '✓ All lessons complete — ready to publish!';
+    status.style.color = 'var(--green)';
+  } else {
+    btn.disabled = true;
+    const done = lessons.filter(l=>l.complete).length;
+    status.textContent = `${done}/${lessons.length} lessons complete. Mark all complete to publish.`;
+    status.style.color = 'var(--muted)';
+  }
+}
+
+// ── Save / Publish ────────────────────────────────────────────────
+function buildCourseObj(publish) {
+  return {
+    name:      document.getElementById('c-name').value.trim() || 'Untitled Course',
+    subject:   document.getElementById('c-subject').value,
+    desc:      document.getElementById('c-desc').value.trim(),
+    price:     parseFloat(document.getElementById('c-price').value) || 0,
+    grades:    document.getElementById('c-grades').value.trim(),
+    lessons:   lessons,
+    published: publish,
+    createdAt: Date.now(),
+  };
+}
+
+function saveCourse() {
+  const courses = getCourses();
+  const obj = buildCourseObj(false);
+  if (editingIdx >= 0) {
+    obj.published = courses[editingIdx].published || false;
+    courses[editingIdx] = obj;
+  } else {
+    courses.push(obj);
+    editingIdx = courses.length - 1;
+  }
+  saveCourses(courses);
+  renderCourses();
+  checkPublishReady();
+  toast('Draft saved!', 'success');
+}
+
+function publishCourse() {
+  if (!lessons.every(l => l.complete)) { toast('Mark all lessons complete first!', 'error'); return; }
+  const courses = getCourses();
+  const obj = buildCourseObj(true);
+  if (editingIdx >= 0) courses[editingIdx] = obj;
+  else { courses.push(obj); editingIdx = courses.length - 1; }
+  saveCourses(courses);
+  closeCourseModal();
+  renderCourses();
+  toast('Course published and live! 🚀', 'success');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = (type==='success'?'✓ ':'⚠ ') + msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ── Overlay close ─────────────────────────────────────────────────
+document.getElementById('course-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeCourseModal();
+});
+
+// ── Init ──────────────────────────────────────────────────────────
+if (sessionStorage.getItem('ss_admin')) {
+  document.getElementById('login-gate').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+  document.getElementById('logout-btn').style.display = '';
+  renderCourses();
+}
+</script>
+</body>
+</html>
