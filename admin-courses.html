@@ -174,6 +174,30 @@
     .toast.success{border-color:#22C55E55;color:var(--green)}
     .toast.error{border-color:#EF444455;color:var(--red)}
 
+    /* VIDEO PICKER MODAL */
+    .vp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:600;align-items:center;justify-content:center;padding:1rem}
+    .vp-overlay.open{display:flex}
+    .vp-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:520px;max-width:96vw;max-height:80vh;display:flex;flex-direction:column;animation:popIn 0.2s ease}
+    .vp-head{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .vp-title{font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800}
+    .vp-list{flex:1;overflow-y:auto;padding:0.6rem}
+    .vp-item{display:flex;align-items:center;gap:0.9rem;padding:0.8rem 0.9rem;border-radius:12px;cursor:pointer;transition:background 0.15s;border:1.5px solid transparent}
+    .vp-item:hover{background:rgba(79,110,247,0.08);border-color:rgba(79,110,247,0.3)}
+    .vp-icon{font-size:1.6rem;flex-shrink:0}
+    .vp-info{flex:1;min-width:0}
+    .vp-name{font-size:0.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .vp-size{font-size:0.72rem;color:var(--muted);margin-top:1px}
+    .vp-select{font-size:0.75rem;font-weight:700;color:var(--accent);white-space:nowrap}
+    /* SERVER CONFIG */
+    .server-cfg{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.5rem}
+    .scfg-title{font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:0.8rem}
+    .scfg-row{display:flex;gap:0.7rem;align-items:flex-end;flex-wrap:wrap}
+    .scfg-field{flex:1;min-width:160px}
+    .scfg-field label{font-size:0.75rem;font-weight:600;display:block;margin-bottom:0.25rem;color:var(--muted)}
+    .scfg-field input{width:100%;padding:0.55rem 0.85rem;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--text);outline:none;transition:border-color 0.2s}
+    .scfg-field input:focus{border-color:var(--accent)}
+    .scfg-status{font-size:0.75rem;margin-top:0.6rem;min-height:1.1em}
+
     /* EMPTY */
     .empty-courses{text-align:center;padding:4rem 2rem;color:var(--muted)}
     .empty-courses .ei{font-size:3rem;margin-bottom:1rem}
@@ -217,6 +241,23 @@
     </div>
     <button class="new-course-btn" onclick="openNewCourse()">+ New course</button>
   </div>
+  <!-- VIDEO SERVER CONFIG -->
+  <div class="server-cfg">
+    <div class="scfg-title">🖥️ Video Server Connection</div>
+    <div class="scfg-row">
+      <div class="scfg-field">
+        <label>Server URL (local or Cloudflare tunnel)</label>
+        <input type="text" id="vs-url" placeholder="http://localhost:4000" />
+      </div>
+      <div class="scfg-field" style="max-width:220px">
+        <label>Token (from your .env file)</label>
+        <input type="text" id="vs-token" placeholder="smartscope-video-2026" />
+      </div>
+      <button class="admin-btn" onclick="saveServerConfig()" style="white-space:nowrap;flex-shrink:0">Save & test</button>
+    </div>
+    <div class="scfg-status" id="vs-status" style="color:var(--muted)">Not connected yet — enter your server URL and click Save & test.</div>
+  </div>
+
   <div class="courses-grid" id="courses-grid"></div>
 </div>
 
@@ -265,12 +306,112 @@
   </div>
 </div>
 
+<!-- VIDEO PICKER MODAL -->
+<div class="vp-overlay" id="video-picker-modal">
+  <div class="vp-box">
+    <div class="vp-head">
+      <div class="vp-title">🎬 Pick a video from your server</div>
+      <button class="modal-close" onclick="closeVideoPicker()">✕</button>
+    </div>
+    <div class="vp-list" id="vp-list">
+      <div style="color:var(--muted);padding:1rem">Loading…</div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
 const ADMIN_EMAIL = 'admin@smartscope.com';
 const ADMIN_PASS  = 'Admin2026!';
+
+// ── Video server config ───────────────────────────────────────────
+// Change VIDEO_SERVER_URL to your Cloudflare tunnel URL when running
+// e.g. 'https://abc123.trycloudflare.com'
+let VIDEO_SERVER_URL = localStorage.getItem('ss_video_server') || 'http://localhost:4000';
+let VIDEO_TOKEN      = localStorage.getItem('ss_video_token')  || 'smartscope-video-2026';
+
+function saveServerConfig() {
+  const url = document.getElementById('vs-url').value.trim().replace(/\/$/, '');
+  const tok = document.getElementById('vs-token').value.trim();
+  if (!url) { toast('Enter a server URL!', 'error'); return; }
+  VIDEO_SERVER_URL = url;
+  VIDEO_TOKEN      = tok;
+  localStorage.setItem('ss_video_server', url);
+  localStorage.setItem('ss_video_token', tok);
+  toast('Server settings saved!', 'success');
+  testServerConnection();
+}
+
+async function testServerConnection() {
+  const el = document.getElementById('vs-status');
+  el.textContent = 'Connecting…';
+  el.style.color = 'var(--yellow)';
+  try {
+    const r = await fetch(VIDEO_SERVER_URL + '/health', { signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const d = await r.json();
+      el.textContent = `✅ Connected — ${d.videoCount} video${d.videoCount!==1?'s':''} found`;
+      el.style.color = 'var(--green)';
+    } else {
+      el.textContent = '❌ Server responded with error';
+      el.style.color = 'var(--red)';
+    }
+  } catch {
+    el.textContent = '❌ Cannot reach server — is it running?';
+    el.style.color = 'var(--red)';
+  }
+}
+
+async function browseVideos(lessonIdx) {
+  const picker = document.getElementById('video-picker-modal');
+  const list   = document.getElementById('vp-list');
+  picker.classList.add('open');
+  picker.dataset.lessonIdx = lessonIdx;
+  list.innerHTML = '<div style="color:var(--muted);padding:1rem">Loading…</div>';
+  try {
+    const r = await fetch(`${VIDEO_SERVER_URL}/videos?token=${VIDEO_TOKEN}`, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error('Server error');
+    const d = await r.json();
+    if (!d.videos.length) {
+      list.innerHTML = "<div style=\"color:var(--muted);padding:1rem\">No video files found in the server's videos folder. Add MP4 files and restart the server.</div>";
+      return;
+    }
+    list.innerHTML = d.videos.map(v => `
+      <div class="vp-item" onclick="selectVideo(${lessonIdx},'${v.name}','${v.url}')">
+        <div class="vp-icon">🎬</div>
+        <div class="vp-info">
+          <div class="vp-name">${v.name}</div>
+          <div class="vp-size">${v.sizeMB} MB</div>
+        </div>
+        <div class="vp-select">Select</div>
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);padding:1rem">❌ Could not connect to video server.<br><small>${e.message}</small><br><br>Make sure the server is running and the URL/token are correct above.</div>`;
+  }
+}
+
+function selectVideo(lessonIdx, name, url) {
+  lessons[lessonIdx].videoUrl  = url;
+  lessons[lessonIdx].videoName = name;
+  lessons[lessonIdx].complete  = false;
+  document.getElementById('video-picker-modal').classList.remove('open');
+  renderLessons();
+  checkPublishReady();
+  toast(`"${name}" selected ✓`, 'success');
+  // Try to get duration
+  const v = document.createElement('video');
+  v.src = url;
+  v.onloadedmetadata = () => {
+    lessons[lessonIdx].duration = Math.round(v.duration);
+    renderLessons();
+  };
+}
+
+function closeVideoPicker() {
+  document.getElementById('video-picker-modal').classList.remove('open');
+}
 
 // ── Auth ─────────────────────────────────────────────────────────
 function doAdminLogin() {
@@ -439,14 +580,22 @@ function buildLessonHTML(l, i) {
       </div>
 
       <div class="section-head">Video</div>
-      <div class="upload-zone" id="uz-${i}" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event,${i})">
-        <input type="file" accept="video/mp4,video/webm,video/*" onchange="handleFileInput(this,${i})" />
-        <div class="uz-icon">🎬</div>
-        <div class="uz-text">Drop your MP4 here or click to browse</div>
-        <div class="uz-sub">MP4 format · max 2GB</div>
-        <div class="upload-progress" id="up-${i}"><div class="upload-progress-fill" id="upf-${i}" style="width:0%"></div></div>
-      </div>
-      ${videoHtml}
+      ${l.videoUrl
+        ? `<div style="background:#15803D11;border:1.5px solid #22C55E44;border-radius:12px;padding:0.9rem 1.1rem;display:flex;align-items:center;gap:10px;margin-bottom:0.6rem">
+            <span style="font-size:1.3rem">✅</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:0.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.videoName||'Video selected'}</div>
+              <div style="font-size:0.72rem;color:var(--muted)">${l.duration?fmtS(l.duration)+' long':''}</div>
+            </div>
+            <button onclick="browseVideos(${i})" style="background:none;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.7rem;border-radius:8px;font-size:0.75rem;cursor:pointer">Change</button>
+          </div>`
+        : `<div style="border:2px dashed var(--border);border-radius:12px;padding:1.8rem;text-align:center">
+            <div style="font-size:2rem;margin-bottom:0.5rem">🎬</div>
+            <div style="font-size:0.88rem;font-weight:600;margin-bottom:0.3rem">No video selected</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1rem">Pick a video from your local video server</div>
+            <button class="admin-btn" onclick="browseVideos(${i})">Browse my videos →</button>
+          </div>`
+      }
 
       <div class="section-head" style="display:flex;align-items:center;justify-content:space-between;margin-top:1.2rem">
         <span>Questions</span>
@@ -707,7 +856,12 @@ if (sessionStorage.getItem('ss_admin')) {
   document.getElementById('login-gate').style.display = 'none';
   document.getElementById('main-content').style.display = 'block';
   document.getElementById('logout-btn').style.display = '';
+  // Populate server config fields
+  document.getElementById('vs-url').value   = VIDEO_SERVER_URL;
+  document.getElementById('vs-token').value = VIDEO_TOKEN;
   renderCourses();
+  // Auto-test connection
+  testServerConnection();
 }
 </script>
 </body>
