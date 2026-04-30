@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Homework — SmartScope</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0D1117;--surface:#161B22;--surface2:#1C2333;--border:#30363D;
+      --accent:#4F6EF7;--green:#22C55E;--yellow:#F59E0B;--red:#EF4444;--purple:#7C3AED;
+      --text:#E6EDF3;--muted:#8B949E;--white:#fff;
+      --grad:linear-gradient(135deg,#4F6EF7,#7C3AED);
+    }
+    html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+
+    /* HEADER */
+    header{background:rgba(13,17,23,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5vw;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:900;text-decoration:none;color:var(--text)}
+    .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .header-right{display:flex;align-items:center;gap:0.9rem}
+    .hlink{font-size:0.82rem;color:var(--muted);text-decoration:none;transition:color 0.2s}
+    .hlink:hover{color:var(--text)}
+    .user-chip{display:flex;align-items:center;gap:7px;font-size:0.82rem;font-weight:600;color:var(--muted)}
+    .user-av{width:28px;height:28px;border-radius:50%;background:var(--grad);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800}
+
+    /* ADMIN BAR */
+    .admin-bar{background:#1C2333;border-bottom:1px solid #4F6EF755;padding:5px 5vw;display:none;align-items:center;gap:1rem;font-size:0.74rem;font-weight:700;color:#93C5FD}
+    .admin-bar.show{display:flex}
+    .admin-tag{background:var(--accent);color:var(--white);padding:2px 8px;border-radius:100px;font-size:0.62rem;letter-spacing:0.07em}
+
+    /* LAYOUT */
+    .page{max-width:1060px;margin:0 auto;padding:2.2rem 5vw}
+    .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;gap:1rem;flex-wrap:wrap}
+    .page-title{font-family:'Nunito',sans-serif;font-size:1.7rem;font-weight:900}
+    .page-sub{font-size:0.88rem;color:var(--muted);margin-top:0.2rem}
+
+    /* TABS */
+    .tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:1.8rem}
+    .tab{background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:700;padding:0.65rem 1.3rem;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all 0.2s}
+    .tab.on{color:var(--text);border-bottom-color:var(--accent)}
+    .tab-panel{display:none}.tab-panel.on{display:block}
+
+    /* HW CARDS */
+    .hw-list{display:flex;flex-direction:column;gap:1rem}
+    .hw-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;transition:border-color 0.2s}
+    .hw-card:hover{border-color:#4F6EF755}
+    .hw-card.overdue{border-color:#EF444444}
+    .hw-card.submitted{border-color:#22C55E44;opacity:0.75}
+    .hw-card.graded{border-color:#7C3AED44}
+    .hw-head{padding:1.1rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;user-select:none}
+    .hw-head-left{display:flex;align-items:center;gap:12px}
+    .hw-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .hw-subject{font-size:0.68rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px}
+    .hw-title{font-family:'Nunito',sans-serif;font-size:0.98rem;font-weight:800}
+    .hw-meta{font-size:0.75rem;color:var(--muted);margin-top:1px}
+    .hw-right{display:flex;align-items:center;gap:0.8rem;flex-shrink:0}
+    .hw-status{font-size:0.7rem;font-weight:800;padding:3px 10px;border-radius:100px;letter-spacing:0.05em;white-space:nowrap}
+    .st-pending{background:#92400E22;color:var(--yellow)}
+    .st-submitted{background:#15803D22;color:var(--green)}
+    .st-graded{background:#4C1D9522;color:#A78BFA}
+    .st-overdue{background:#7F1D1D22;color:var(--red)}
+    .hw-chevron{color:var(--muted);font-size:0.8rem;transition:transform 0.2s}
+    .hw-chevron.open{transform:rotate(180deg)}
+
+    /* HW BODY */
+    .hw-body{display:none;border-top:1px solid var(--border);padding:1.4rem}
+    .hw-body.open{display:block}
+    .hw-instructions{font-size:0.9rem;line-height:1.65;color:var(--text);margin-bottom:1.4rem;white-space:pre-wrap}
+    .hw-questions{display:flex;flex-direction:column;gap:1.2rem;margin-bottom:1.4rem}
+    .hw-q{background:var(--surface2);border-radius:12px;padding:1rem 1.1rem}
+    .hw-q-num{font-size:0.68rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem}
+    .hw-q-text{font-size:0.9rem;font-weight:600;margin-bottom:0.7rem;line-height:1.5}
+    .hw-q-input{width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);outline:none;transition:border-color 0.2s;resize:vertical;min-height:80px}
+    .hw-q-input:focus{border-color:var(--accent)}
+    .hw-q-input:disabled{opacity:0.6;cursor:not-allowed}
+    .hw-q-answer{background:#15803D11;border:1px solid #22C55E33;border-radius:8px;padding:0.6rem 0.9rem;font-size:0.85rem;margin-top:0.5rem;display:none}
+    .hw-q-answer.show{display:block}
+    .hw-q-grade{display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;font-size:0.8rem;font-weight:600}
+    .hw-submit-row{display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap}
+    .hw-submit-btn{background:var(--grad);color:var(--white);border:none;padding:0.7rem 1.6rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800;cursor:pointer;transition:opacity 0.2s}
+    .hw-submit-btn:hover{opacity:0.85}
+    .hw-submit-btn:disabled{opacity:0.45;cursor:not-allowed}
+    .hw-submitted-msg{font-size:0.82rem;color:var(--green);font-weight:600;display:none}
+    .hw-submitted-msg.show{display:block}
+    .hw-grade-chip{background:#4C1D9522;border:1px solid #7C3AED44;border-radius:100px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:700;color:#A78BFA}
+    .hw-feedback{background:var(--surface2);border-radius:10px;padding:0.8rem 1rem;font-size:0.84rem;margin-top:1rem;border-left:3px solid var(--purple);display:none}
+    .hw-feedback.show{display:block}
+    .hw-feedback-label{font-size:0.68rem;font-weight:800;color:#A78BFA;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:0.3rem}
+
+    /* ADMIN ASSIGN SECTION */
+    .assign-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:1.4rem;margin-bottom:1rem}
+    .assign-title{font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:1.1rem}
+    .af{margin-bottom:0.85rem}
+    .af label{font-size:0.78rem;font-weight:600;display:block;margin-bottom:0.28rem;color:var(--muted)}
+    .af input,.af select,.af textarea{width:100%;padding:0.62rem 0.88rem;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);outline:none;transition:border-color 0.2s}
+    .af input:focus,.af select:focus,.af textarea:focus{border-color:var(--accent)}
+    .af select option{background:var(--surface2)}
+    .af textarea{min-height:80px;resize:vertical}
+    .af-row{display:flex;gap:0.7rem;flex-wrap:wrap}
+    .af-row .af{flex:1;min-width:140px;margin-bottom:0}
+    .q-builder{display:flex;flex-direction:column;gap:0.65rem;margin:0.7rem 0}
+    .q-builder-item{background:var(--surface2);border-radius:10px;padding:0.75rem 0.9rem;display:flex;gap:0.7rem;align-items:flex-start}
+    .q-builder-num{font-size:0.7rem;font-weight:800;color:var(--accent);letter-spacing:0.06em;margin-top:3px;white-space:nowrap}
+    .q-builder-input{flex:1;padding:0.52rem 0.8rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.86rem;color:var(--text);outline:none;width:100%;transition:border-color 0.2s}
+    .q-builder-input:focus{border-color:var(--accent)}
+    .q-del-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:3px 6px;border-radius:6px;font-size:0.82rem;transition:all 0.2s;flex-shrink:0;margin-top:1px}
+    .q-del-btn:hover{background:#EF444422;color:var(--red)}
+    .add-q-btn{background:none;border:1.5px dashed var(--border);color:var(--muted);width:100%;padding:0.55rem;border-radius:10px;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s}
+    .add-q-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .assign-btn{background:var(--grad);color:var(--white);border:none;padding:0.65rem 1.4rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:800;cursor:pointer;transition:opacity 0.2s}
+    .assign-btn:hover{opacity:0.85}
+    .assign-success{background:#DCFCE733;color:var(--green);border-radius:8px;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:600;display:none}
+
+    /* GRADE PANEL */
+    .grade-panel{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:1.4rem;margin-bottom:1rem}
+    .submission-item{background:var(--surface2);border-radius:12px;padding:1rem;margin-bottom:0.8rem}
+    .si-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem;gap:1rem;flex-wrap:wrap}
+    .si-student{font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800}
+    .si-date{font-size:0.72rem;color:var(--muted)}
+    .si-answers{display:flex;flex-direction:column;gap:0.6rem;margin-bottom:0.9rem}
+    .si-answer-row{font-size:0.84rem}
+    .si-q-label{font-size:0.72rem;font-weight:700;color:var(--accent);letter-spacing:0.05em;margin-bottom:2px}
+    .si-answer-text{background:var(--bg);border-radius:8px;padding:0.5rem 0.75rem;font-size:0.84rem;line-height:1.5}
+    .grade-row{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap}
+    .grade-input{width:70px;padding:0.5rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);outline:none;text-align:center}
+    .grade-input:focus{border-color:var(--accent)}
+    .grade-fb-input{flex:1;min-width:160px;padding:0.5rem 0.75rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--text);outline:none}
+    .grade-fb-input:focus{border-color:var(--purple)}
+    .grade-save-btn{background:var(--green);color:var(--white);border:none;padding:0.5rem 1.1rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;cursor:pointer;white-space:nowrap}
+    .grade-save-btn:hover{background:#16A34A}
+
+    /* EMPTY */
+    .empty-hw{text-align:center;padding:3.5rem 1rem;color:var(--muted)}
+    .empty-hw .ei{font-size:2.8rem;margin-bottom:0.8rem}
+    .empty-hw p{font-size:0.88rem;line-height:1.6}
+
+    /* NOT LOGGED IN */
+    .login-wall{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 58px)}
+    .lw-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:360px;max-width:94vw;text-align:center}
+    .lw-icon{font-size:2.2rem;margin-bottom:0.9rem}
+    .lw-title{font-family:'Nunito',sans-serif;font-size:1.35rem;font-weight:900;margin-bottom:0.4rem}
+    .lw-sub{font-size:0.86rem;color:var(--muted);margin-bottom:1.4rem}
+    .lw-btn{display:inline-block;background:var(--grad);color:var(--white);padding:0.7rem 1.8rem;border-radius:100px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.92rem;text-decoration:none}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:1.8rem;right:1.8rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.75rem 1.1rem;font-size:0.84rem;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 8px 28px rgba(0,0,0,0.4);z-index:999;transform:translateY(70px);opacity:0;transition:all 0.28s}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.ok{border-color:#22C55E55;color:var(--green)}
+    .toast.err{border-color:#EF444455;color:var(--red)}
+
+    @media(max-width:640px){.af-row{flex-direction:column}.hw-right{flex-direction:column;align-items:flex-end}}
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="tutoring-site.html">Smart<span>Scope</span></a>
+  <div class="header-right">
+    <a class="hlink" href="classes.html">My Classes</a>
+    <a class="hlink" href="video.html">Courses</a>
+    <a class="hlink" href="tutoring-site.html">← Home</a>
+    <div class="user-chip"><div class="user-av" id="hdr-av">?</div><span id="hdr-name"></span></div>
+  </div>
+</header>
+
+<div class="admin-bar" id="admin-bar">
+  <span class="admin-tag">ADMIN</span>
+  <span>Admin view — assign and grade homework</span>
+  <a href="admin-courses.html" style="color:var(--accent);text-decoration:none;margin-left:auto">⚙ Course Builder →</a>
+</div>
+
+<!-- NOT LOGGED IN -->
+<div class="login-wall" id="login-wall" style="display:none">
+  <div class="lw-box">
+    <div class="lw-icon">📚</div>
+    <div class="lw-title">Log in to see your homework</div>
+    <div class="lw-sub">You need a SmartScope account to access your assignments.</div>
+    <a class="lw-btn" href="tutoring-site.html">Go to SmartScope →</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="page" id="main-page" style="display:none">
+  <div class="page-head">
+    <div>
+      <div class="page-title" id="page-title">Homework 📚</div>
+      <div class="page-sub" id="page-sub">Your assignments, all in one place.</div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tab-bar">
+    <!-- student tabs inserted by JS -->
+  </div>
+
+  <!-- STUDENT: pending -->
+  <div class="tab-panel" id="tab-pending"></div>
+  <!-- STUDENT: submitted/graded -->
+  <div class="tab-panel" id="tab-done"></div>
+  <!-- ADMIN: assign -->
+  <div class="tab-panel" id="tab-assign"></div>
+  <!-- ADMIN: grade submissions -->
+  <div class="tab-panel" id="tab-grade"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Auth ──────────────────────────────────────────────────────────
+const isAdmin   = () => sessionStorage.getItem('ss_admin') === '1';
+const getUser   = () => { try{ return JSON.parse(localStorage.getItem('ss_user')); }catch{ return null; } };
+const getToken  = () => localStorage.getItem('ss_tok');
+const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000/api'
+  : 'https://tutoring-website-production-4e6b.up.railway.app/api';
+const ADMIN_PASS = 'Admin2026!';
+
+// ── Data helpers ──────────────────────────────────────────────────
+// Homework stored in localStorage: keyed by assignment id
+// Each assignment: { id, title, subject, instructions, questions:[{text}], dueDate, assignedTo:'all'|uid, createdAt }
+// Submissions: ss_hw_sub_<hwId>_<userId> = { answers:[], submittedAt, grade, feedback }
+
+function getHW()          { try{ return JSON.parse(localStorage.getItem('ss_homework'))||[]; }catch{ return []; } }
+function saveHW(a)        { localStorage.setItem('ss_homework', JSON.stringify(a)); }
+function getSub(hwId,uid) { try{ return JSON.parse(localStorage.getItem(`ss_hw_sub_${hwId}_${uid}`)); }catch{ return null; } }
+function saveSub(hwId,uid,data){ localStorage.setItem(`ss_hw_sub_${hwId}_${uid}`, JSON.stringify(data)); }
+function uid()            { return 'hw_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); }
+
+let currentUser = null;
+
+// ── Toast ─────────────────────────────────────────────────────────
+function toast(msg, type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=(type==='ok'?'✓ ':'⚠ ')+msg;
+  el.className='toast '+type+' show';
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+function init(){
+  if(isAdmin()){
+    document.getElementById('admin-bar').classList.add('show');
+    document.getElementById('hdr-av').textContent='⚙';
+    document.getElementById('hdr-name').textContent='Admin';
+    currentUser = { id:'admin', firstName:'Admin', lastName:'' };
+    showMain(true);
+    return;
+  }
+  const user=getUser(), token=getToken();
+  if(!user||!token){ document.getElementById('login-wall').style.display='flex'; return; }
+  currentUser=user;
+  document.getElementById('hdr-av').textContent=((user.firstName?.[0]||'')+(user.lastName?.[0]||'')).toUpperCase();
+  document.getElementById('hdr-name').textContent=user.firstName;
+  showMain(false);
+}
+
+function showMain(admin){
+  document.getElementById('main-page').style.display='block';
+  if(admin){
+    document.getElementById('page-title').textContent='Homework Manager 📋';
+    document.getElementById('page-sub').textContent='Assign homework to students and grade submissions.';
+    document.getElementById('tab-bar').innerHTML=`
+      <button class="tab on" onclick="showTab('assign')">Assign</button>
+      <button class="tab" onclick="showTab('grade')">Grade submissions</button>`;
+    renderAssign();
+    renderGrade();
+    showTab('assign');
+  } else {
+    document.getElementById('tab-bar').innerHTML=`
+      <button class="tab on" onclick="showTab('pending')">To do</button>
+      <button class="tab" onclick="showTab('done')">Submitted</button>`;
+    renderPending();
+    renderDone();
+    showTab('pending');
+  }
+}
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const admin=isAdmin();
+    const names=admin?['assign','grade']:['pending','done'];
+    t.classList.toggle('on',names[i]===name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+name).classList.add('on');
+}
+
+function toggleHW(id){
+  const body=document.getElementById('hwb-'+id);
+  const chev=document.getElementById('hwc-'+id);
+  const open=body.classList.toggle('open');
+  chev.classList.toggle('open',open);
+}
+
+// ── STUDENT: pending ──────────────────────────────────────────────
+function renderPending(){
+  const all=getHW();
+  const uid=currentUser.id;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const mine=all.filter(h=>h.assignedTo==='all'||h.assignedTo===uid);
+  const pending=mine.filter(h=>{
+    const sub=getSub(h.id,uid);
+    return !sub;
+  });
+  const el=document.getElementById('tab-pending');
+  if(!pending.length){
+    el.innerHTML=`<div class="empty-hw"><div class="ei">🎉</div><p>No homework due right now.<br>Check back after your next class!</p></div>`;
+    return;
+  }
+  el.innerHTML='<div class="hw-list">'+pending.map(h=>hwCardHTML(h,uid,false)).join('')+'</div>';
+}
+
+function renderDone(){
+  const all=getHW();
+  const uid=currentUser.id;
+  const mine=all.filter(h=>h.assignedTo==='all'||h.assignedTo===uid);
+  const done=mine.filter(h=>!!getSub(h.id,uid));
+  const el=document.getElementById('tab-done');
+  if(!done.length){
+    el.innerHTML=`<div class="empty-hw"><div class="ei">📭</div><p>Nothing submitted yet.<br>Complete your pending assignments first!</p></div>`;
+    return;
+  }
+  el.innerHTML='<div class="hw-list">'+done.map(h=>hwCardHTML(h,uid,true)).join('')+'</div>';
+}
+
+function hwCardHTML(h,uid,submitted){
+  const sub=getSub(h.id,uid);
+  const graded=sub?.grade!==undefined&&sub?.grade!==null&&sub?.grade!=='';
+  const due=h.dueDate?new Date(h.dueDate):null;
+  const overdue=due&&new Date()<due===false&&!sub;
+  let statusClass='st-pending',statusText='To do';
+  if(graded){statusClass='st-graded';statusText=`Graded: ${sub.grade}/10`;}
+  else if(sub){statusClass='st-submitted';statusText='Submitted ✓';}
+  else if(overdue){statusClass='st-overdue';statusText='Overdue';}
+
+  const cardClass=graded?'graded':sub?'submitted':overdue?'overdue':'';
+  const subjectColors={'Mathematics':'#1D4ED8','Sciences':'#15803D','English / Writing':'#7C3AED','Computer Science':'#0E7490','French':'#C2410C','Physics':'#0369A1','Chemistry':'#166534','Biology':'#14532D'};
+  const color=subjectColors[h.subject]||'#4F6EF7';
+
+  const questionsHTML=(h.questions||[]).map((q,qi)=>{
+    const ans=sub?.answers?.[qi]||'';
+    const disabled=sub?'disabled':'';
+    return `<div class="hw-q">
+      <div class="hw-q-num">Question ${qi+1}</div>
+      <div class="hw-q-text">${q.text}</div>
+      <textarea class="hw-q-input" id="ans-${h.id}-${qi}" rows="3" placeholder="Type your answer here…" ${disabled}>${ans}</textarea>
+      ${graded&&sub.answers?.[qi]?`<div class="hw-q-grade"><span style="color:var(--green)">✓</span> Answer recorded</div>`:''}
+    </div>`;
+  }).join('');
+
+  return `<div class="hw-card ${cardClass}" id="hwcard-${h.id}">
+    <div class="hw-head" onclick="toggleHW('${h.id}')">
+      <div class="hw-head-left">
+        <div class="hw-icon" style="background:${color}22;font-size:1.1rem">📝</div>
+        <div>
+          <div class="hw-subject" style="color:${color}">${h.subject}</div>
+          <div class="hw-title">${h.title}</div>
+          <div class="hw-meta">${due?'Due '+due.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'}):''}</div>
+        </div>
+      </div>
+      <div class="hw-right">
+        <span class="hw-status ${statusClass}">${statusText}</span>
+        <span class="hw-chevron" id="hwc-${h.id}">▼</span>
+      </div>
+    </div>
+    <div class="hw-body" id="hwb-${h.id}">
+      ${h.instructions?`<div class="hw-instructions">${h.instructions}</div>`:''}
+      <div class="hw-questions">${questionsHTML}</div>
+      <div class="hw-submit-row">
+        ${!sub?`<button class="hw-submit-btn" onclick="submitHW('${h.id}',${(h.questions||[]).length})">Submit answers →</button>`:''}
+        ${sub?`<span class="hw-submitted-msg show">✅ Submitted ${new Date(sub.submittedAt).toLocaleDateString()}</span>`:''}
+        ${graded?`<div class="hw-grade-chip">Grade: ${sub.grade}/10</div>`:''}
+      </div>
+      ${graded&&sub.feedback?`<div class="hw-feedback show"><div class="hw-feedback-label">Tutor feedback</div>${sub.feedback}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function submitHW(hwId, qCount){
+  const answers=[];
+  let allFilled=true;
+  for(let i=0;i<qCount;i++){
+    const val=document.getElementById(`ans-${hwId}-${i}`)?.value?.trim()||'';
+    if(!val) allFilled=false;
+    answers.push(val);
+  }
+  if(!allFilled){ toast('Answer all questions before submitting!','err'); return; }
+  const uid=currentUser.id;
+  saveSub(hwId,uid,{ answers, submittedAt:new Date().toISOString(), grade:null, feedback:'' });
+  toast('Homework submitted! ✓','ok');
+  renderPending();
+  renderDone();
+  showTab('pending');
+}
+
+// ── ADMIN: assign ──────────────────────────────────────────────────
+let assignQuestions=[{text:''}];
+
+async function renderAssign(){
+  let students=[];
+  try{
+    const r=await fetch(API+'/admin/students',{headers:{'x-admin-key':ADMIN_PASS}});
+    if(r.ok) students=(await r.json()).students||[];
+  }catch{}
+
+  const studentOpts='<option value="all">Everyone (all students)</option>'+students.map(s=>`<option value="${s.id}">${s.firstName} ${s.lastName}</option>`).join('');
+
+  document.getElementById('tab-assign').innerHTML=`
+    <div class="assign-card">
+      <div class="assign-title">📋 Assign new homework</div>
+      <div class="af-row">
+        <div class="af"><label>Title</label><input type="text" id="hw-title" placeholder="e.g. Chapter 2 Review" /></div>
+        <div class="af"><label>Subject</label>
+          <select id="hw-subject">
+            <option>Mathematics</option><option>Physics</option><option>Chemistry</option>
+            <option>Biology</option><option>English / Writing</option><option>Computer Science</option><option>French</option>
+          </select>
+        </div>
+      </div>
+      <div class="af-row" style="margin-top:0.7rem">
+        <div class="af"><label>Assign to</label><select id="hw-assignto">${studentOpts}</select></div>
+        <div class="af"><label>Due date</label><input type="date" id="hw-due" /></div>
+      </div>
+      <div class="af" style="margin-top:0.7rem"><label>Instructions (optional)</label><textarea id="hw-instructions" placeholder="e.g. Show all your working. Answer in full sentences."></textarea></div>
+      <div class="af" style="margin-top:0.9rem">
+        <label>Questions</label>
+        <div class="q-builder" id="q-builder"></div>
+        <button class="add-q-btn" onclick="addAssignQ()">+ Add question</button>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:0.8rem;align-items:center">
+        <button class="assign-btn" onclick="assignHW()">Assign homework →</button>
+        <div class="assign-success" id="assign-ok">Assigned! ✓</div>
+      </div>
+    </div>
+
+    <div class="assign-card">
+      <div class="assign-title">📚 All assigned homework</div>
+      <div id="all-hw-list">${renderAllHWList()}</div>
+    </div>`;
+
+  renderQBuilder();
+}
+
+function renderQBuilder(){
+  document.getElementById('q-builder').innerHTML=assignQuestions.map((q,i)=>`
+    <div class="q-builder-item">
+      <div class="q-builder-num">Q${i+1}</div>
+      <input class="q-builder-input" type="text" value="${q.text}" placeholder="Write your question…" oninput="assignQuestions[${i}].text=this.value" />
+      ${assignQuestions.length>1?`<button class="q-del-btn" onclick="removeAssignQ(${i})">✕</button>`:''}
+    </div>`).join('');
+}
+
+function addAssignQ(){ assignQuestions.push({text:''}); renderQBuilder(); }
+function removeAssignQ(i){ assignQuestions.splice(i,1); renderQBuilder(); }
+
+function assignHW(){
+  const title=document.getElementById('hw-title').value.trim();
+  const subject=document.getElementById('hw-subject').value;
+  const assignedTo=document.getElementById('hw-assignto').value;
+  const dueDate=document.getElementById('hw-due').value;
+  const instructions=document.getElementById('hw-instructions').value.trim();
+  const questions=assignQuestions.filter(q=>q.text.trim());
+  if(!title){ toast('Give this assignment a title!','err'); return; }
+  if(!questions.length){ toast('Add at least one question!','err'); return; }
+  const all=getHW();
+  all.push({ id:uid(), title, subject, assignedTo, dueDate, instructions, questions, createdAt:new Date().toISOString() });
+  saveHW(all);
+  // reset
+  document.getElementById('hw-title').value='';
+  document.getElementById('hw-instructions').value='';
+  document.getElementById('hw-due').value='';
+  assignQuestions=[{text:''}];
+  renderQBuilder();
+  document.getElementById('all-hw-list').innerHTML=renderAllHWList();
+  const ok=document.getElementById('assign-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2500);
+  toast('Homework assigned!','ok');
+}
+
+function renderAllHWList(){
+  const all=getHW();
+  if(!all.length) return '<div style="font-size:0.86rem;color:var(--muted);padding:0.5rem 0">No homework assigned yet.</div>';
+  return all.map((h,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:10px;padding:0.7rem 0.9rem;margin-bottom:0.5rem;gap:1rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:0.88rem;font-weight:600">${h.title}</div>
+        <div style="font-size:0.73rem;color:var(--muted)">${h.subject} · ${h.questions.length} question${h.questions.length!==1?'s':''} · ${h.assignedTo==='all'?'Everyone':'Specific student'}${h.dueDate?' · Due '+new Date(h.dueDate).toLocaleDateString():''}</div>
+      </div>
+      <button onclick="deleteHW(${i})" style="background:none;border:1px solid #EF444433;color:var(--red);padding:0.3rem 0.75rem;border-radius:8px;font-size:0.75rem;cursor:pointer;font-weight:700">Delete</button>
+    </div>`).join('');
+}
+
+function deleteHW(i){
+  if(!confirm('Delete this assignment?')) return;
+  const all=getHW(); all.splice(i,1); saveHW(all);
+  document.getElementById('all-hw-list').innerHTML=renderAllHWList();
+  toast('Deleted.','ok');
+}
+
+// ── ADMIN: grade ──────────────────────────────────────────────────
+async function renderGrade(){
+  let students=[];
+  try{
+    const r=await fetch(API+'/admin/students',{headers:{'x-admin-key':ADMIN_PASS}});
+    if(r.ok) students=(await r.json()).students||[];
+  }catch{}
+
+  const all=getHW();
+  let html='';
+
+  if(!all.length){
+    html='<div class="empty-hw"><div class="ei">📭</div><p>No homework assigned yet.</p></div>';
+  } else {
+    all.forEach(h=>{
+      const subs=students.map(s=>({ student:s, sub:getSub(h.id,s.id) })).filter(x=>x.sub);
+      if(!subs.length) return;
+      html+=`<div class="grade-panel">
+        <div class="assign-title">📝 ${h.title} <span style="font-weight:400;color:var(--muted);font-size:0.75rem">(${h.subject})</span></div>
+        ${subs.map(({student:s,sub})=>{
+          const graded=sub.grade!==null&&sub.grade!==undefined&&sub.grade!=='';
+          return `<div class="submission-item">
+            <div class="si-head">
+              <div><div class="si-student">${s.firstName} ${s.lastName}</div><div class="si-date">Submitted ${new Date(sub.submittedAt).toLocaleDateString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>
+              ${graded?`<span style="background:#4C1D9522;border:1px solid #7C3AED44;border-radius:100px;padding:2px 10px;font-size:0.75rem;font-weight:700;color:#A78BFA">Grade: ${sub.grade}/10</span>`:'<span style="background:#92400E22;color:var(--yellow);border-radius:100px;padding:2px 10px;font-size:0.73rem;font-weight:700">Needs grading</span>'}
+            </div>
+            <div class="si-answers">
+              ${h.questions.map((q,qi)=>`
+                <div class="si-answer-row">
+                  <div class="si-q-label">Q${qi+1}: ${q.text}</div>
+                  <div class="si-answer-text">${sub.answers?.[qi]||'<em style="color:var(--muted)">No answer</em>'}</div>
+                </div>`).join('')}
+            </div>
+            <div class="grade-row">
+              <span style="font-size:0.78rem;font-weight:600;color:var(--muted)">Grade:</span>
+              <input class="grade-input" type="number" min="0" max="10" placeholder="—" id="grade-${h.id}-${s.id}" value="${sub.grade??''}" />
+              <span style="font-size:0.78rem;color:var(--muted)">/10</span>
+              <input class="grade-fb-input" type="text" placeholder="Feedback for student (optional)…" id="fb-${h.id}-${s.id}" value="${sub.feedback||''}" />
+              <button class="grade-save-btn" onclick="saveGrade('${h.id}','${s.id}')">Save</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    });
+    if(!html) html='<div class="empty-hw"><div class="ei">⏳</div><p>No submissions yet.<br>Students haven\'t turned anything in.</p></div>';
+  }
+
+  document.getElementById('tab-grade').innerHTML=html;
+}
+
+function saveGrade(hwId,studentId){
+  const grade=document.getElementById(`grade-${hwId}-${studentId}`)?.value;
+  const feedback=document.getElementById(`fb-${hwId}-${studentId}`)?.value||'';
+  const sub=getSub(hwId,studentId);
+  if(!sub){ toast('No submission found.','err'); return; }
+  sub.grade=grade!==''?parseFloat(grade):null;
+  sub.feedback=feedback;
+  saveSub(hwId,studentId,sub);
+  toast('Grade saved!','ok');
+  renderGrade();
+}
+
+init();
+</script>
+</body>
+</html>
