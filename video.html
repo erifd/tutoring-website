@@ -123,6 +123,41 @@
     .no-courses{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:3rem;color:var(--muted)}
     .no-courses .ni{font-size:3rem;margin-bottom:1rem}
 
+    /* SIDEBAR TABS */
+    .pl-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+    .pl-tab{flex:1;background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;padding:0.6rem 0.5rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s}
+    .pl-tab.on{color:var(--text);border-bottom-color:var(--accent)}
+    .pl-panel{display:none;flex:1;overflow-y:auto;flex-direction:column}
+    .pl-panel.on{display:flex}
+    /* HW SIDE */
+    .hw-side{padding:0.9rem;display:flex;flex-direction:column;gap:0.7rem;width:100%}
+    .hw-side-empty{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:0.84rem}
+    .hw-side-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:0.5rem}
+    .hw-side-head{padding:0.8rem 0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:0.6rem}
+    .hw-side-info{flex:1;min-width:0}
+    .hw-side-title{font-size:0.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hw-side-meta{font-size:0.7rem;color:var(--muted);margin-top:1px}
+    .hw-side-badge{font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:100px;white-space:nowrap;flex-shrink:0}
+    .hb-todo{background:#92400E22;color:var(--yellow)}
+    .hb-done{background:#15803D22;color:var(--green)}
+    .hb-graded{background:#4C1D9522;color:#A78BFA}
+    .hw-side-body{display:none;border-top:1px solid var(--border);padding:0.8rem 0.9rem}
+    .hw-side-body.open{display:block}
+    .hw-side-instructions{font-size:0.8rem;color:var(--muted);margin-bottom:0.8rem;line-height:1.5}
+    .hw-side-q{margin-bottom:0.7rem}
+    .hw-side-qnum{font-size:0.64rem;font-weight:800;color:var(--accent);letter-spacing:0.06em;margin-bottom:2px}
+    .hw-side-qtext{font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;line-height:1.4}
+    .hw-side-input{width:100%;padding:0.52rem 0.7rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.8rem;color:var(--text);outline:none;resize:vertical;min-height:60px;transition:border-color 0.2s}
+    .hw-side-input:focus{border-color:var(--accent)}
+    .hw-side-input:disabled{opacity:0.6;cursor:not-allowed}
+    .hw-submit{width:100%;background:var(--grad);color:var(--white);border:none;padding:0.6rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;cursor:pointer;margin-top:0.6rem;transition:opacity 0.2s}
+    .hw-submit:hover{opacity:0.85}
+    .hw-submit:disabled{opacity:0.4;cursor:not-allowed}
+    .hw-grade-show{background:#4C1D9522;border:1px solid #7C3AED33;border-radius:8px;padding:0.5rem 0.7rem;font-size:0.78rem;margin-top:0.5rem;color:#A78BFA;display:none}
+    .hw-grade-show.show{display:block}
+    .hw-feedback-show{background:var(--bg);border-left:2px solid #7C3AED;border-radius:6px;padding:0.5rem 0.7rem;font-size:0.78rem;margin-top:0.4rem;color:var(--muted);display:none}
+    .hw-feedback-show.show{display:block}
+
     @media(max-width:860px){
       body,html{overflow:auto}
       .layout{grid-template-columns:1fr;height:auto}
@@ -136,7 +171,10 @@
 <header>
   <a class="logo" href="tutoring-site.html">Smart<span>Scope</span></a>
   <div class="h-center" id="h-course-name">SmartScope Courses</div>
-  <a class="back-btn" href="tutoring-site.html">← Home</a>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <a class="back-btn" href="homework.html" style="color:#A78BFA">📚 Homework</a>
+    <a class="back-btn" href="tutoring-site.html">← Home</a>
+  </div>
 </header>
 
 <div class="layout">
@@ -218,7 +256,18 @@
       <div class="pl-progress" id="pl-prog-txt">0 of 0 complete</div>
       <div class="pl-bar"><div class="pl-bar-fill" id="pl-bar-fill" style="width:0%"></div></div>
     </div>
-    <div class="pl-body" id="pl-body"></div>
+    <div class="pl-tabs">
+      <button class="pl-tab on" onclick="switchSideTab('lessons')">📋 Lessons</button>
+      <button class="pl-tab" onclick="switchSideTab('homework')" id="hw-tab-btn">📚 Homework</button>
+    </div>
+    <div class="pl-panel on" id="pl-panel-lessons">
+      <div class="pl-body" id="pl-body"></div>
+    </div>
+    <div class="pl-panel" id="pl-panel-homework">
+      <div class="hw-side" id="hw-side-content">
+        <div class="hw-side-empty">Loading homework…</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -560,6 +609,99 @@ function replayLesson(){
 
 // ── Run ───────────────────────────────────────────────────────────
 init();
+
+// ── Sidebar tab switching ─────────────────────────────────────────
+function switchSideTab(name){
+  document.querySelectorAll('.pl-tab').forEach((t,i)=>{
+    t.classList.toggle('on', ['lessons','homework'][i]===name);
+  });
+  document.getElementById('pl-panel-lessons').classList.toggle('on', name==='lessons');
+  document.getElementById('pl-panel-homework').classList.toggle('on', name==='homework');
+  if(name==='homework') renderHWSide();
+}
+
+// ── Homework data helpers ─────────────────────────────────────────
+function getHW(){ try{return JSON.parse(localStorage.getItem('ss_homework'))||[];}catch{return[];} }
+function getSub(hwId,uid){ try{return JSON.parse(localStorage.getItem('ss_hw_sub_'+hwId+'_'+uid));}catch{return null;} }
+function saveSub(hwId,uid,data){ localStorage.setItem('ss_hw_sub_'+hwId+'_'+uid, JSON.stringify(data)); }
+function getUser(){ try{return JSON.parse(localStorage.getItem('ss_user'));}catch{return null;} }
+
+// ── Render homework in sidebar ────────────────────────────────────
+function renderHWSide(){
+  const el = document.getElementById('hw-side-content');
+  const user = isAdmin() ? null : getUser();
+  const uid  = user?.id || null;
+  const all  = getHW();
+
+  // filter to relevant homework
+  const mine = uid ? all.filter(h => h.assignedTo==='all' || h.assignedTo===uid) : all;
+
+  if(!mine.length){
+    el.innerHTML = '<div class="hw-side-empty">📭<br>No homework assigned yet.<br>Check back after class!</div>';
+    return;
+  }
+
+  // badge count on tab
+  const pending = mine.filter(h => uid && !getSub(h.id, uid)).length;
+  document.getElementById('hw-tab-btn').textContent = '📚 Homework' + (pending ? ` (${pending})` : '');
+
+  el.innerHTML = mine.map(h => {
+    const sub  = uid ? getSub(h.id, uid) : null;
+    const graded = sub?.grade !== null && sub?.grade !== undefined && sub?.grade !== '';
+    let badgeClass = 'hb-todo', badgeText = 'To do';
+    if(graded){ badgeClass='hb-graded'; badgeText=`${sub.grade}/10`; }
+    else if(sub){ badgeClass='hb-done'; badgeText='Submitted'; }
+    const due = h.dueDate ? new Date(h.dueDate).toLocaleDateString([],{month:'short',day:'numeric'}) : '';
+
+    const questionsHTML = (h.questions||[]).map((q,qi) => {
+      const ans = sub?.answers?.[qi]||'';
+      const disabled = sub ? 'disabled' : '';
+      return `<div class="hw-side-q">
+        <div class="hw-side-qnum">Q${qi+1}</div>
+        <div class="hw-side-qtext">${q.text}</div>
+        <textarea class="hw-side-input" id="hws-${h.id}-${qi}" rows="2" placeholder="Your answer…" ${disabled}>${ans}</textarea>
+      </div>`;
+    }).join('');
+
+    return `<div class="hw-side-card">
+      <div class="hw-side-head" onclick="toggleHWSide('${h.id}')">
+        <div class="hw-side-info">
+          <div class="hw-side-title">${h.title}</div>
+          <div class="hw-side-meta">${h.subject}${due?' · Due '+due:''}</div>
+        </div>
+        <span class="hw-side-badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="hw-side-body" id="hwsb-${h.id}">
+        ${h.instructions?`<div class="hw-side-instructions">${h.instructions}</div>`:''}
+        ${questionsHTML}
+        ${!sub && uid ? `<button class="hw-submit" onclick="submitHWSide('${h.id}',${(h.questions||[]).length})">Submit →</button>` : ''}
+        ${graded ? `
+          <div class="hw-grade-show show">🎓 Grade: <strong>${sub.grade}/10</strong></div>
+          ${sub.feedback?`<div class="hw-feedback-show show">💬 ${sub.feedback}</div>`:''}
+        ` : sub ? `<div class="hw-side-instructions" style="color:var(--green);margin-top:0.5rem">✅ Submitted — waiting for grade</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHWSide(id){
+  document.getElementById('hwsb-'+id)?.classList.toggle('open');
+}
+
+function submitHWSide(hwId, qCount){
+  const user = getUser();
+  if(!user){ alert('Log in to submit homework!'); return; }
+  const answers=[];
+  let allFilled=true;
+  for(let i=0;i<qCount;i++){
+    const val=document.getElementById('hws-'+hwId+'-'+i)?.value?.trim()||'';
+    if(!val) allFilled=false;
+    answers.push(val);
+  }
+  if(!allFilled){ alert('Answer all questions before submitting!'); return; }
+  saveSub(hwId, user.id, { answers, submittedAt:new Date().toISOString(), grade:null, feedback:'' });
+  renderHWSide();
+}
 </script>
 </body>
 </html>

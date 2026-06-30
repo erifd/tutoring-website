@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Parent Dashboard — SmartScope</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#F0F4FF;--surface:#fff;--surface2:#F4F6FB;--border:rgba(15,27,45,0.1);
+      --accent:#4F6EF7;--accent-light:#E0E7FF;--accent-dark:#3B55D4;
+      --green:#16A34A;--yellow:#B45309;--red:#DC2626;--purple:#7C3AED;
+      --ink:#1A1F36;--muted:#6B7A99;--white:#fff;
+      --grad:linear-gradient(135deg,#4F6EF7,#7C3AED);
+    }
+    html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+
+    /* HEADER */
+    header{background:rgba(255,255,255,0.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5vw;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:900;text-decoration:none;color:var(--ink)}
+    .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-links{display:flex;align-items:center;gap:1.4rem}
+    .nav-link{font-size:0.82rem;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:500;transition:color 0.2s}
+    .nav-link:hover,.nav-link.active{color:var(--ink);font-weight:700}
+    .user-chip{display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600;color:var(--muted)}
+    .user-av{width:30px;height:30px;border-radius:50%;background:var(--grad);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800}
+    .logout-link{font-size:0.78rem;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s}
+    .logout-link:hover{color:var(--red)}
+
+    /* PAGE */
+    .page{max-width:1080px;margin:0 auto;padding:2rem 5vw}
+    .panel{display:none}.panel.active{display:block}
+    .panel-title{font-family:'Nunito',sans-serif;font-size:1.5rem;font-weight:900;margin-bottom:0.25rem}
+    .panel-sub{font-size:0.86rem;color:var(--muted);margin-bottom:1.8rem}
+
+    /* TABS */
+    .tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:2rem}
+    .tab{background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;padding:0.65rem 1.3rem;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all 0.2s}
+    .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+    /* CARDS */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.4rem;margin-bottom:1.2rem}
+    .card-title{font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:1.1rem}
+
+    /* CHILD SELECTOR */
+    .child-selector{display:flex;gap:0.7rem;flex-wrap:wrap;margin-bottom:1.5rem}
+    .child-chip{padding:0.5rem 1.1rem;border-radius:100px;border:1.5px solid var(--border);font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s;color:var(--muted);background:var(--surface)}
+    .child-chip.active{background:var(--accent);border-color:var(--accent);color:var(--white)}
+
+    /* OVERVIEW STATS */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.2rem}
+    .stat-lbl{font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem}
+    .stat-val{font-family:'Nunito',sans-serif;font-size:1.9rem;font-weight:900;line-height:1}
+    .stat-sub{font-size:0.72rem;color:var(--muted);margin-top:3px}
+
+    /* GRADES */
+    .grades-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.75rem}
+    .grade-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.85rem}
+    .grade-subj{font-size:0.68rem;color:var(--muted);margin-bottom:3px}
+    .grade-val{font-family:'Nunito',sans-serif;font-size:1.8rem;font-weight:900;line-height:1}
+    .g-high{color:var(--green)}.g-mid{color:var(--yellow)}.g-low{color:var(--red)}.g-none{color:var(--muted)}
+    .grade-bar{height:3px;border-radius:2px;background:var(--border);margin-top:7px;overflow:hidden}
+    .grade-fill{height:100%;border-radius:2px;background:var(--accent)}
+
+    /* HW PROGRESS */
+    .hw-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:10px;padding:0.7rem 0.9rem;margin-bottom:0.5rem;gap:1rem}
+    .hw-row-title{font-size:0.86rem;font-weight:600}
+    .hw-row-meta{font-size:0.72rem;color:var(--muted)}
+    .hw-status-badge{font-size:0.68rem;font-weight:800;padding:2px 9px;border-radius:100px}
+    .hs-todo{background:#FEF3C722;color:var(--yellow)}
+    .hs-done{background:#DCFCE722;color:var(--green)}
+    .hs-graded{background:#EDE9FE22;color:var(--purple)}
+
+    /* COURSES SHOP */
+    .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+    .shop-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}
+    .shop-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(79,110,247,0.1)}
+    .shop-thumb{height:110px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative}
+    .ct-m{background:linear-gradient(135deg,#1e3a5f,#2563eb)}
+    .ct-s{background:linear-gradient(135deg,#14532d,#16a34a)}
+    .ct-c{background:linear-gradient(135deg,#1e1b4b,#4f46e5)}
+    .ct-f{background:linear-gradient(135deg,#7c2d12,#c2410c)}
+    .ct-gen{background:linear-gradient(135deg,#1f2937,#374151)}
+    .shop-body{padding:1rem 1.1rem}
+    .shop-subj{font-size:0.62rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+    .shop-name{font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;margin-bottom:0.3rem;line-height:1.3}
+    .shop-meta{font-size:0.72rem;color:var(--muted);margin-bottom:0.9rem}
+    .shop-price{font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:900;color:var(--ink)}
+    .shop-actions{display:flex;align-items:center;justify-content:space-between;margin-top:0.7rem}
+    .buy-btn{background:var(--grad);color:var(--white);border:none;padding:0.55rem 1.2rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;cursor:pointer;transition:opacity 0.2s}
+    .buy-btn:hover{opacity:0.85}
+    .buy-btn:disabled{opacity:0.4;cursor:not-allowed}
+    .unlocked-badge{background:#DCFCE7;color:var(--green);font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:100px;border:1px solid #86EFAC}
+
+    /* CLASSES */
+    .class-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:10px;padding:0.7rem 0.9rem;margin-bottom:0.5rem;gap:1rem;flex-wrap:wrap}
+    .class-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .dot-live{background:#22C55E}.dot-soon{background:var(--yellow)}.dot-sched{background:#CBD5E1}
+    .cr-name{font-size:0.86rem;font-weight:600}
+    .cr-meta{font-size:0.72rem;color:var(--muted)}
+
+    /* LINK CHILD */
+    .link-form{display:flex;flex-direction:column;gap:0.9rem;max-width:460px}
+    .lf input{padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.92rem;color:var(--ink);outline:none;width:100%;transition:border-color 0.2s}
+    .lf input:focus{border-color:var(--accent)}
+    .lf label{font-size:0.78rem;font-weight:600;color:var(--muted);display:block;margin-bottom:0.25rem}
+    .lf-btn{background:var(--grad);color:var(--white);border:none;padding:0.68rem 1.4rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:800;cursor:pointer;align-self:flex-start;transition:opacity 0.2s}
+    .lf-btn:hover{opacity:0.85}
+    .linked-child{display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:14px;padding:0.9rem 1.1rem;margin-bottom:0.8rem}
+    .lc-av{width:38px;height:38px;border-radius:50%;background:var(--grad);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:800;flex-shrink:0}
+    .lc-name{font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800}
+    .lc-meta{font-size:0.75rem;color:var(--muted)}
+    .unlink-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.75rem;border-radius:8px;font-size:0.75rem;cursor:pointer;transition:all 0.2s}
+    .unlink-btn:hover{border-color:var(--red);color:var(--red)}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:2.5rem;color:var(--muted)}
+    .empty .ei{font-size:2.2rem;margin-bottom:0.6rem}
+    .empty p{font-size:0.85rem;line-height:1.6}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:var(--white);border-radius:12px;padding:0.7rem 1rem;font-size:0.82rem;font-weight:600;z-index:999;transform:translateY(60px);opacity:0;transition:all 0.25s;box-shadow:0 8px 28px rgba(0,0,0,0.25)}
+    .toast.show{transform:translateY(0);opacity:1}
+
+    /* LOGIN WALL */
+    .login-wall{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 58px);padding:2rem}
+    .lw-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:380px;max-width:100%;text-align:center}
+    .lw-icon{font-size:2.2rem;margin-bottom:0.9rem}
+    .lw-title{font-family:'Nunito',sans-serif;font-size:1.3rem;font-weight:900;margin-bottom:0.4rem}
+    .lw-sub{font-size:0.84rem;color:var(--muted);margin-bottom:1.4rem}
+    .lw-btn{display:inline-block;background:var(--grad);color:var(--white);padding:0.65rem 1.6rem;border-radius:100px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;text-decoration:none}
+
+    @media(max-width:640px){.stats-row{grid-template-columns:1fr 1fr}.shop-grid{grid-template-columns:1fr}}
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-auth.js"></script>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="tutoring-site.html">Smart<span>Scope</span></a>
+  <nav class="nav-links">
+    <button class="nav-link active" onclick="showTab('overview')">Overview</button>
+    <button class="nav-link" onclick="showTab('courses')">Buy Courses</button>
+    <button class="nav-link" onclick="showTab('children')">My Children</button>
+  </nav>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div class="user-chip"><div class="user-av" id="hdr-av">?</div><span id="hdr-name"></span></div>
+    <button class="logout-link" onclick="doLogout()">Log out</button>
+  </div>
+</header>
+
+<!-- LOGIN WALL -->
+<div id="login-wall" style="display:none">
+  <div class="login-wall"><div class="lw-box">
+    <div class="lw-icon">👨‍👩‍👧</div>
+    <div class="lw-title">Parent login required</div>
+    <div class="lw-sub">Log in to your SmartScope parent account to view your child's progress.</div>
+    <a class="lw-btn" href="tutoring-site.html">Go to SmartScope →</a>
+  </div></div>
+</div>
+
+<!-- MAIN PAGE -->
+<div id="main-page" style="display:none">
+<div class="page">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" id="tab-overview" onclick="showTab('overview')">📊 Overview</button>
+    <button class="tab" id="tab-courses" onclick="showTab('courses')">🎬 Buy Courses</button>
+    <button class="tab" id="tab-children" onclick="showTab('children')">👨‍👩‍👧 My Children</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="panel active" id="panel-overview">
+    <div class="panel-title">Family Overview 👨‍👩‍👧</div>
+    <div class="panel-sub">See how your child is doing at a glance.</div>
+    <div id="child-selector-wrap"></div>
+    <div id="overview-content"></div>
+  </div>
+
+  <!-- BUY COURSES -->
+  <div class="panel" id="panel-courses">
+    <div class="panel-title">Video Courses 🎬</div>
+    <div class="panel-sub">Buy courses to unlock them for your child.</div>
+    <div id="child-for-courses-wrap" style="margin-bottom:1.2rem"></div>
+    <div class="shop-grid" id="shop-grid"></div>
+  </div>
+
+  <!-- CHILDREN -->
+  <div class="panel" id="panel-children">
+    <div class="panel-title">My Children 👨‍👩‍👧</div>
+    <div class="panel-sub">Link your child's SmartScope account to your parent account.</div>
+    <div class="card">
+      <div class="card-title">Linked children</div>
+      <div id="linked-children-list"></div>
+      <div class="card-title" style="margin-top:1.2rem">Link a child account</div>
+      <p style="font-size:0.84rem;color:var(--muted);margin-bottom:1rem">
+        Ask your child to open their <b>Student Dashboard</b> and share their <b>6-character linking code</b> with you. Enter it below.
+      </p>
+      <div class="link-form lf">
+        <div>
+          <label>Child's linking code</label>
+          <input type="text" id="link-code" placeholder="e.g. X7KP2Q" maxlength="6" style="text-transform:uppercase;letter-spacing:0.15em;font-size:1.1rem;font-weight:700;text-align:center" />
+        </div>
+        <button class="lf-btn" onclick="linkChild()">Link account →</button>
+        <div id="link-msg" style="font-size:0.82rem;display:none"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Firebase helpers loaded from firebase-auth.js
+  let currentParent = null;
+  let linkedChildren = [];
+  let selectedChildId = null;
+
+  function ini(u){return((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase();}
+  function toast(m){const el=document.getElementById('toast');el.textContent=m;el.className='toast show';setTimeout(()=>el.classList.remove('show'),3200);}
+  function getPublishedCourses(){try{const a=JSON.parse(localStorage.getItem('ss_courses'))||[];return a.map((c,i)=>({...c,_idx:i})).filter(c=>c.published);}catch{return[];}}
+
+  // ── Init ─────────────────────────────────────────────────────
+  onAuthReady(async (user) => {
+    if (!user || user.role === 'student') {
+      document.getElementById('login-wall').style.display = 'block'; return;
+    }
+    currentParent = user;
+    cacheUser(user);
+    document.getElementById('main-page').style.display = 'block';
+    document.getElementById('hdr-av').textContent  = ini(user);
+    document.getElementById('hdr-name').textContent = user.firstName;
+
+    // Load linked children
+    if (user.children?.length) {
+      await loadLinkedChildren(user.children);
+    }
+    renderAll();
+  });
+
+  async function loadLinkedChildren(uids) {
+    linkedChildren = await Promise.all(uids.map(uid => getUserProfile(uid)));
+    linkedChildren = linkedChildren.filter(Boolean);
+    if (linkedChildren.length) selectedChildId = linkedChildren[0].uid;
+  }
+
+  async function doLogout() {
+    await firebaseLogout(); clearCache(); location.href = 'tutoring-site.html';
+  }
+
+  function showTab(name){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('on');
+    document.getElementById('panel-'+name).classList.add('active');
+    if(name==='courses') renderShop();
+    if(name==='children') renderChildren();
+  }
+
+  function renderAll(){ renderChildSelector(); renderOverview(); renderLinkedChildren(); }
+
+  function renderChildSelector(){
+    const wrap=document.getElementById('child-selector-wrap');
+    if(!linkedChildren.length){wrap.innerHTML='';return;}
+    wrap.innerHTML='<div class="child-selector">'+linkedChildren.map(c=>`
+      <div class="child-chip ${c.uid===selectedChildId?'active':''}" onclick="selectChild('${c.uid}')">
+        ${c.firstName} ${c.lastName}</div>`).join('')+'</div>';
+  }
+
+  function selectChild(id){selectedChildId=id;renderChildSelector();renderOverview();renderShop();}
+
+  async function renderOverview(){
+    const el=document.getElementById('overview-content');
+    if(!linkedChildren.length){
+      el.innerHTML=`<div class="empty"><div class="ei">👨‍👩‍👧</div><p>No children linked yet.<br>Go to <b>My Children</b> to link your child's account.</p></div>`;return;
+    }
+    const uid=selectedChildId;
+    const [grades,classes,hw,enrollments]=await Promise.all([
+      getStudentGrades(uid), getStudentClasses(uid),
+      getHomeworkForStudent(uid), getStudentEnrollments(uid)
+    ]);
+    const gradeEntries=Object.entries(grades).filter(([,v])=>v!==null&&v!=='');
+    const avg=gradeEntries.length?Math.round(gradeEntries.reduce((a,[,v])=>a+parseFloat(v),0)/gradeEntries.length*10)/10:'—';
+    const subs=await Promise.all(hw.map(h=>getSubmission(h.id,uid)));
+    const submitted=subs.filter(Boolean).length;
+
+    el.innerHTML=`
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-lbl">Avg grade</div><div class="stat-val">${avg}</div><div class="stat-sub">out of 10</div></div>
+        <div class="stat-card"><div class="stat-lbl">Classes</div><div class="stat-val">${classes.length}</div><div class="stat-sub">scheduled</div></div>
+        <div class="stat-card"><div class="stat-lbl">Homework</div><div class="stat-val">${submitted}/${hw.length}</div><div class="stat-sub">submitted</div></div>
+        <div class="stat-card"><div class="stat-lbl">Courses</div><div class="stat-val">${enrollments.length}</div><div class="stat-sub">unlocked</div></div>
+      </div>
+      <div class="card"><div class="card-title">📊 Grades</div>
+        ${gradeEntries.length?`<div class="grades-grid">${gradeEntries.map(([s,v])=>{const n=parseFloat(v);const cls=n>=8?'g-high':n>=5?'g-mid':'g-low';return`<div class="grade-card"><div class="grade-subj">${s}</div><div class="grade-val ${cls}">${v}</div><div class="grade-bar"><div class="grade-fill" style="width:${n*10}%"></div></div></div>`;}).join('')}</div>`
+        :'<div class="empty"><div class="ei">📊</div><p>No grades yet.</p></div>'}
+      </div>
+      <div class="card"><div class="card-title">📝 Homework</div>
+        ${hw.length?hw.map((h,i)=>{const s=subs[i];const graded=s&&s.grade!==null&&s.grade!=='';let bc='hs-todo',bt='Not started';if(graded){bc='hs-graded';bt='Graded: '+s.grade+'/10';}else if(s){bc='hs-done';bt='Submitted ✓';}
+          return`<div class="hw-row"><div><div class="hw-row-title">${h.title}</div><div class="hw-row-meta">${h.subject}</div></div><span class="hw-status-badge ${bc}">${bt}</span></div>`;}).join('')
+        :'<div class="empty"><div class="ei">📝</div><p>No homework yet.</p></div>'}
+      </div>
+      <div class="card"><div class="card-title">📅 Classes</div>
+        ${classes.length?classes.slice(0,5).map(c=>{const dotCls=c.status==='live'?'dot-live':c.status==='soon'?'dot-soon':'dot-sched';const d=new Date(c.date.replace(/-/g,'/')).toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+          return`<div class="class-row"><div class="class-dot ${dotCls}"></div><div><div class="cr-name">${c.subject}</div><div class="cr-meta">${d}${c.time?' at '+c.time:''}</div></div></div>`;}).join('')
+        :'<div class="empty"><div class="ei">📅</div><p>No classes yet.</p></div>'}
+      </div>`;
+  }
+
+  async function renderShop(){
+    const courses=getPublishedCourses();
+    const el=document.getElementById('shop-grid');
+    const childWrap=document.getElementById('child-for-courses-wrap');
+    if(linkedChildren.length>1){
+      childWrap.innerHTML='<div style="font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:0.5rem">Unlock for:</div><div class="child-selector">'+
+        linkedChildren.map(c=>`<div class="child-chip ${c.uid===selectedChildId?'active':''}" onclick="selectChild('${c.uid}');renderShop()">${c.firstName}</div>`).join('')+'</div>';
+    } else childWrap.innerHTML='';
+
+    if(!courses.length){el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="ei">🎬</div><p>No courses yet.</p></div>`;return;}
+    const uid=selectedChildId;
+    const enrollments=uid?await getStudentEnrollments(uid):[];
+    const unlockedIdxs=enrollments.map(e=>e.courseIdx);
+    const thumbs=['ct-m','ct-s','ct-c','ct-f','ct-gen'];
+    const icons=['📐','⚗️','💡','🇫🇷','📚'];
+    el.innerHTML=courses.map((c,i)=>{
+      const isUnlocked=uid&&unlockedIdxs.includes(c._idx);
+      const tc=thumbs[i%thumbs.length], ic=icons[i%icons.length];
+      return `<div class="shop-card">
+        <div class="shop-thumb ${tc}">${ic}</div>
+        <div class="shop-body">
+          <div class="shop-subj">${c.subject}</div>
+          <div class="shop-name">${c.name}</div>
+          <div class="shop-meta">${c.lessons?.length||0} lessons · Grades ${c.grades||'All'}</div>
+          <div class="shop-actions">
+            <div class="shop-price">$${c.price||'—'}</div>
+            ${isUnlocked?`<span class="unlocked-badge">✓ Unlocked</span>`
+              :uid?`<button class="buy-btn" onclick="buyCourse(${c._idx},'${c.name}')">Buy for ${linkedChildren.find(ch=>ch.uid===uid)?.firstName||'child'} →</button>`
+              :`<button class="buy-btn" disabled>Link a child first</button>`}
+          </div>
+        </div></div>`;
+    }).join('');
+  }
+
+  async function buyCourse(courseIdx, courseName){
+    const uid=selectedChildId;
+    if(!uid){toast('Select a child first!');return;}
+    // In production: open PayPal here, then call enrollStudentInCourse on success
+    await enrollStudentInCourse(uid, currentParent.uid, courseIdx, courseName);
+    toast('Course unlocked! ✓ Your child can now access it.');
+    renderShop(); renderOverview();
+  }
+
+  // ── LINK CHILD via linking key ────────────────────────────────
+  async function linkChild(){
+    const code=document.getElementById('link-code').value.trim().toUpperCase();
+    const msg=document.getElementById('link-msg');
+    if(!code||code.length!==6){msg.textContent='Enter the 6-character code from your child's dashboard.';msg.style.color='var(--red)';msg.style.display='block';return;}
+    msg.textContent='Searching…'; msg.style.color='var(--muted)'; msg.style.display='block';
+    try {
+      const student = await linkParentToStudent(currentParent.uid, code);
+      linkedChildren.push(student);
+      if(!selectedChildId) selectedChildId=student.uid;
+      document.getElementById('link-code').value='';
+      msg.textContent=`✓ ${student.firstName} ${student.lastName} linked!`;
+      msg.style.color='var(--green)';
+      // update local parent profile
+      currentParent.children = [...(currentParent.children||[]), student.uid];
+      cacheUser(currentParent);
+      renderAll();
+      toast(`${student.firstName} linked! ✓`);
+    } catch(e) {
+      msg.textContent=e.message||'Something went wrong.'; msg.style.color='var(--red)';
+    }
+  }
+
+  async function unlinkChild(uid){
+    if(!confirm('Unlink this child?')) return;
+    await unlinkParentFromStudent(currentParent.uid, uid);
+    linkedChildren=linkedChildren.filter(c=>c.uid!==uid);
+    if(selectedChildId===uid) selectedChildId=linkedChildren[0]?.uid||null;
+    currentParent.children=(currentParent.children||[]).filter(id=>id!==uid);
+    cacheUser(currentParent);
+    renderAll(); toast('Child unlinked.');
+  }
+
+  function renderChildren(){
+    const el=document.getElementById('linked-children-list');
+    if(!linkedChildren.length){el.innerHTML=`<div class="empty"><div class="ei">👶</div><p>No children linked yet.</p></div>`;return;}
+    el.innerHTML=linkedChildren.map(c=>`
+      <div class="linked-child">
+        <div class="lc-av">${ini(c)}</div>
+        <div><div class="lc-name">${c.firstName} ${c.lastName}</div><div class="lc-meta">${c.email}${c.grade?' · Grade '+c.grade:''}</div></div>
+        <button class="unlink-btn" onclick="unlinkChild('${c.uid}')">Unlink</button>
+      </div>`).join('');
+  }
+
+  function renderLinkedChildren(){ renderChildren(); }
+</script>
+</body>
+</html>

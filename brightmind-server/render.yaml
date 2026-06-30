@@ -1,0 +1,21 @@
+# Render deployment config — SmartScope
+# Put this file in the ROOT of your brightmind-server folder on GitHub
+# Then go to render.com → New → Web Service → connect your repo
+
+services:
+  - type: web
+    name: smartscope-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_KEY
+        value: Admin2026!
+      - key: ALLOWED_ORIGIN
+        value: "*"

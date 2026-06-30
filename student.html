@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Dashboard — SmartScope</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0D1117;--surface:#161B22;--surface2:#1C2333;--border:#30363D;
+      --accent:#4F6EF7;--green:#22C55E;--yellow:#F59E0B;--red:#EF4444;--purple:#7C3AED;
+      --text:#E6EDF3;--muted:#8B949E;--white:#fff;
+      --grad:linear-gradient(135deg,#4F6EF7,#7C3AED);
+    }
+    html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+
+    /* HEADER */
+    header{background:rgba(13,17,23,0.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5vw;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:900;text-decoration:none;color:var(--text)}
+    .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-links{display:flex;align-items:center;gap:1.4rem}
+    .nav-link{font-size:0.82rem;color:var(--muted);text-decoration:none;font-weight:500;transition:color 0.2s;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
+    .nav-link:hover{color:var(--text)}
+    .nav-link.active{color:var(--text);font-weight:700}
+    .user-chip{display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600}
+    .user-av{width:30px;height:30px;border-radius:50%;background:var(--grad);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;flex-shrink:0}
+    .logout-link{font-size:0.78rem;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s}
+    .logout-link:hover{color:var(--red)}
+
+    /* LAYOUT */
+    .layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 58px)}
+
+    /* SIDEBAR */
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 0;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto}
+    .sb-section{margin-bottom:1.8rem}
+    .sb-label{font-size:0.65rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0 1.2rem;margin-bottom:0.5rem}
+    .sb-item{display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.85rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.15s;text-decoration:none;border-left:3px solid transparent}
+    .sb-item:hover{background:rgba(79,110,247,0.06);color:var(--text)}
+    .sb-item.active{background:rgba(79,110,247,0.1);color:var(--text);border-left-color:var(--accent)}
+    .sb-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+    .sb-badge{margin-left:auto;background:var(--accent);color:var(--white);font-size:0.6rem;font-weight:800;padding:1px 6px;border-radius:100px;min-width:18px;text-align:center}
+    .sb-badge.yellow{background:var(--yellow);color:#000}
+
+    /* MAIN */
+    .main{padding:2rem 2.5rem;overflow-y:auto}
+    .panel{display:none}.panel.active{display:block}
+    .panel-title{font-family:'Nunito',sans-serif;font-size:1.5rem;font-weight:900;margin-bottom:0.3rem}
+    .panel-sub{font-size:0.86rem;color:var(--muted);margin-bottom:1.8rem}
+
+    /* OVERVIEW CARDS */
+    .overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+    .ov-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.2rem}
+    .ov-label{font-size:0.72rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem}
+    .ov-val{font-family:'Nunito',sans-serif;font-size:1.8rem;font-weight:900;line-height:1}
+    .ov-sub{font-size:0.72rem;color:var(--muted);margin-top:3px}
+
+    /* LIVE CLASS BANNER */
+    .live-banner{background:linear-gradient(135deg,#15803D18,#22C55E08);border:1px solid #22C55E44;border-radius:16px;padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;animation:pulseBorder 2s ease-in-out infinite}
+    @keyframes pulseBorder{0%,100%{border-color:#22C55E33}50%{border-color:#22C55E88}}
+    .live-dot{width:10px;height:10px;background:var(--green);border-radius:50%;flex-shrink:0;position:relative}
+    .live-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:var(--green);opacity:0.25;animation:ping 1.5s infinite}
+    @keyframes ping{0%{transform:scale(1);opacity:0.25}100%{transform:scale(2.2);opacity:0}}
+    .live-info{display:flex;align-items:center;gap:12px}
+    .live-text .live-tag{font-size:0.62rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:2px}
+    .live-text .live-name{font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800}
+    .live-text .live-meta{font-size:0.75rem;color:var(--muted)}
+    .join-btn{background:var(--green);color:var(--white);border:none;padding:0.6rem 1.4rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background 0.2s}
+    .join-btn:hover{background:#16A34A}
+
+    /* CLASSES LIST */
+    .class-list{display:flex;flex-direction:column;gap:0.75rem}
+    .class-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;transition:border-color 0.2s}
+    .class-card:hover{border-color:#4F6EF755}
+    .class-card.live{border-color:#22C55E55;background:linear-gradient(135deg,#15803D0A,var(--surface))}
+    .cc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .cc-dot.live{background:var(--green)}
+    .cc-dot.soon{background:var(--yellow)}
+    .cc-dot.sched{background:var(--border)}
+    .cc-subj{font-size:0.65rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+    .cc-name{font-size:0.92rem;font-weight:600}
+    .cc-time{font-size:0.75rem;color:var(--muted)}
+    .cc-join{background:var(--accent);color:var(--white);border:none;padding:0.42rem 1rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background 0.2s}
+    .cc-join:hover{background:var(--accent-dark,#3B55D4)}
+    .cc-join.inactive{background:var(--surface2);color:var(--muted);cursor:default}
+
+    /* CALENDAR */
+    .cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem}
+    .cal-head{background:var(--surface2);padding:0.9rem 1.3rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+    .cal-month{font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800}
+    .cal-navs{display:flex;gap:5px}
+    .cal-navs button{background:var(--surface);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+    .cal-navs button:hover{background:var(--accent);border-color:var(--accent);color:var(--white)}
+    .cal-wdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg);border-bottom:1px solid var(--border)}
+    .cal-wd{text-align:center;font-size:0.65rem;font-weight:700;color:var(--muted);padding:0.45rem 0;letter-spacing:0.04em}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+    .cal-cell{min-height:68px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 5px;cursor:pointer;transition:background 0.12s}
+    .cal-cell:nth-child(7n){border-right:none}
+    .cal-cell:hover{background:rgba(79,110,247,0.06)}
+    .cal-cell.empty{background:rgba(0,0,0,0.12);cursor:default}
+    .cal-cell.empty:hover{background:rgba(0,0,0,0.12)}
+    .cal-cell.today .cal-dn{background:var(--accent);color:var(--white);border-radius:5px}
+    .cal-dn{font-size:0.7rem;font-weight:600;color:var(--muted);padding:1px 3px;display:inline-block;margin-bottom:2px}
+    .cal-ev{font-size:0.6rem;font-weight:700;border-radius:4px;padding:1px 5px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ev-class{background:#1D4ED822;color:#93C5FD;border-left:2px solid #3B82F6}
+    .ev-live{background:#15803D22;color:#86EFAC;border-left:2px solid var(--green)}
+    .ev-hw{background:#92400E22;color:#FCD34D;border-left:2px solid var(--yellow)}
+
+    /* HOMEWORK */
+    .hw-list{display:flex;flex-direction:column;gap:0.8rem}
+    .hw-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden}
+    .hw-head{padding:0.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer}
+    .hw-subj{font-size:0.62rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+    .hw-title{font-size:0.9rem;font-weight:700}
+    .hw-due{font-size:0.72rem;color:var(--muted)}
+    .hw-badge{font-size:0.62rem;font-weight:800;padding:2px 8px;border-radius:100px;white-space:nowrap}
+    .hb-todo{background:#92400E22;color:var(--yellow)}
+    .hb-done{background:#15803D22;color:var(--green)}
+    .hb-graded{background:#4C1D9522;color:#A78BFA}
+    .hw-body{display:none;border-top:1px solid var(--border);padding:1rem 1.1rem}
+    .hw-body.open{display:block}
+    .hw-instructions{font-size:0.85rem;color:var(--muted);margin-bottom:1rem;line-height:1.6}
+    .hw-q{background:var(--surface2);border-radius:10px;padding:0.8rem 0.9rem;margin-bottom:0.7rem}
+    .hw-qnum{font-size:0.62rem;font-weight:800;color:var(--accent);letter-spacing:0.06em;margin-bottom:3px}
+    .hw-qtext{font-size:0.86rem;font-weight:600;margin-bottom:0.5rem;line-height:1.45}
+    .hw-input{width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:0.84rem;color:var(--text);outline:none;resize:vertical;min-height:70px;transition:border-color 0.2s}
+    .hw-input:focus{border-color:var(--accent)}
+    .hw-input:disabled{opacity:0.55;cursor:not-allowed}
+    .hw-submit-btn{background:var(--grad);color:var(--white);border:none;padding:0.62rem 1.4rem;border-radius:100px;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;margin-top:0.7rem;transition:opacity 0.2s}
+    .hw-submit-btn:hover{opacity:0.85}
+    .hw-grade-chip{background:#4C1D9522;border:1px solid #7C3AED44;border-radius:100px;padding:3px 10px;font-size:0.76rem;font-weight:700;color:#A78BFA;margin-top:0.5rem;display:inline-block}
+    .hw-feedback{background:var(--bg);border-left:2px solid var(--purple);border-radius:6px;padding:0.6rem 0.8rem;font-size:0.8rem;color:var(--muted);margin-top:0.5rem}
+
+    /* COURSES */
+    .courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+    .course-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform 0.2s,border-color 0.2s;cursor:pointer;text-decoration:none}
+    .course-card:hover{transform:translateY(-3px);border-color:#4F6EF755}
+    .course-thumb{height:110px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative}
+    .ct-m{background:linear-gradient(135deg,#1e3a5f,#2563eb)}
+    .ct-s{background:linear-gradient(135deg,#14532d,#16a34a)}
+    .ct-c{background:linear-gradient(135deg,#1e1b4b,#4f46e5)}
+    .ct-f{background:linear-gradient(135deg,#7c2d12,#c2410c)}
+    .ct-gen{background:linear-gradient(135deg,#1f2937,#374151)}
+    .course-prog-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.15)}
+    .course-prog-fill{height:100%;background:var(--green);transition:width 0.4s}
+    .course-body{padding:0.9rem 1rem}
+    .course-subj{font-size:0.62rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+    .course-name{font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800;margin-bottom:0.3rem;line-height:1.3}
+    .course-meta{font-size:0.72rem;color:var(--muted)}
+    .locked-card{opacity:0.45;cursor:not-allowed}
+    .locked-card:hover{transform:none;border-color:var(--border)}
+    .lock-badge{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);color:var(--white);font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px}
+
+    /* GRADES */
+    .grades-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.8rem}
+    .grade-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem}
+    .grade-subj{font-size:0.7rem;color:var(--muted);margin-bottom:4px}
+    .grade-val{font-family:'Nunito',sans-serif;font-size:2rem;font-weight:900;line-height:1}
+    .g-high{color:var(--green)}.g-mid{color:var(--yellow)}.g-low{color:var(--red)}.g-none{color:var(--muted)}
+    .grade-bar{height:3px;border-radius:2px;background:var(--surface2);margin-top:8px;overflow:hidden}
+    .grade-fill{height:100%;border-radius:2px;background:var(--accent)}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+    .empty .ei{font-size:2.5rem;margin-bottom:0.7rem}
+    .empty p{font-size:0.86rem;line-height:1.6}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.7rem 1rem;font-size:0.82rem;font-weight:600;z-index:999;transform:translateY(60px);opacity:0;transition:all 0.25s;display:flex;align-items:center;gap:7px;box-shadow:0 8px 28px rgba(0,0,0,0.4)}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.ok{border-color:#22C55E55;color:var(--green)}
+    .toast.err{border-color:#EF444455;color:var(--red)}
+
+    /* LOGIN WALL */
+    .login-wall{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 58px)}
+    .lw-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:360px;max-width:94vw;text-align:center}
+    .lw-icon{font-size:2.2rem;margin-bottom:0.9rem}
+    .lw-title{font-family:'Nunito',sans-serif;font-size:1.3rem;font-weight:900;margin-bottom:0.4rem}
+    .lw-sub{font-size:0.84rem;color:var(--muted);margin-bottom:1.4rem}
+    .lw-btn{display:inline-block;background:var(--grad);color:var(--white);padding:0.65rem 1.6rem;border-radius:100px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;text-decoration:none}
+
+    @media(max-width:768px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .main{padding:1.2rem}
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-auth.js"></script>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="tutoring-site.html">Smart<span>Scope</span></a>
+  <nav class="nav-links" id="nav-links">
+    <button class="nav-link active" onclick="showPanel('overview')">Overview</button>
+    <button class="nav-link" onclick="showPanel('classes')">Classes</button>
+    <button class="nav-link" onclick="showPanel('homework')">Homework</button>
+    <button class="nav-link" onclick="showPanel('courses')">Courses</button>
+    <button class="nav-link" onclick="showPanel('grades')">Grades</button>
+  </nav>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div class="user-chip"><div class="user-av" id="hdr-av">?</div><span id="hdr-name"></span></div>
+    <button class="logout-link" onclick="doLogout()">Log out</button>
+  </div>
+</header>
+
+<!-- LOGIN WALL -->
+<div id="login-wall" style="display:none">
+  <div class="login-wall"><div class="lw-box">
+    <div class="lw-icon">🎓</div>
+    <div class="lw-title">Student login required</div>
+    <div class="lw-sub">Log in to your SmartScope student account to access your dashboard.</div>
+    <a class="lw-btn" href="tutoring-site.html">Go to SmartScope →</a>
+  </div></div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none">
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-label">Dashboard</div>
+        <div class="sb-item active" onclick="showPanel('overview')"><span class="sb-icon">🏠</span> Overview</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-label">Learning</div>
+        <div class="sb-item" id="sb-classes" onclick="showPanel('classes')"><span class="sb-icon">📅</span> My Classes</div>
+        <div class="sb-item" id="sb-homework" onclick="showPanel('homework')"><span class="sb-icon">📝</span> Homework <span class="sb-badge yellow" id="hw-badge" style="display:none">0</span></div>
+        <div class="sb-item" id="sb-courses" onclick="showPanel('courses')"><span class="sb-icon">🎬</span> Video Courses</div>
+        <div class="sb-item" id="sb-grades" onclick="showPanel('grades')"><span class="sb-icon">📊</span> Grades</div>
+      </div>
+    </div>
+
+    <!-- MAIN PANELS -->
+    <div class="main">
+
+      <!-- OVERVIEW -->
+      <div class="panel active" id="panel-overview">
+        <div class="panel-title" id="greeting">Hey! 👋</div>
+        <div class="panel-sub">Here's what's going on today.</div>
+        <div class="overview-grid">
+          <div class="ov-card"><div class="ov-label">Classes</div><div class="ov-val" id="ov-classes">0</div><div class="ov-sub">scheduled</div></div>
+          <div class="ov-card"><div class="ov-label">Homework</div><div class="ov-val" id="ov-hw">0</div><div class="ov-sub">to do</div></div>
+          <div class="ov-card"><div class="ov-label">Courses</div><div class="ov-val" id="ov-courses">0</div><div class="ov-sub">unlocked</div></div>
+          <div class="ov-card"><div class="ov-label">Avg grade</div><div class="ov-val" id="ov-grade">—</div><div class="ov-sub">out of 10</div></div>
+        </div>
+        <div id="overview-live"></div>
+        <div id="overview-upcoming"></div>
+      </div>
+
+      <!-- CLASSES -->
+      <div class="panel" id="panel-classes">
+        <div class="panel-title">My Classes 📅</div>
+        <div class="panel-sub">Your upcoming and past sessions.</div>
+        <div class="cal-wrap">
+          <div class="cal-head">
+            <div class="cal-month" id="cal-month">—</div>
+            <div class="cal-navs">
+              <button onclick="shiftCal(-1)">‹</button>
+              <button onclick="shiftCal(1)">›</button>
+            </div>
+          </div>
+          <div class="cal-wdays">
+            <div class="cal-wd">Sun</div><div class="cal-wd">Mon</div><div class="cal-wd">Tue</div>
+            <div class="cal-wd">Wed</div><div class="cal-wd">Thu</div><div class="cal-wd">Fri</div><div class="cal-wd">Sat</div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div class="class-list" id="class-list"></div>
+      </div>
+
+      <!-- HOMEWORK -->
+      <div class="panel" id="panel-homework">
+        <div class="panel-title">Homework 📝</div>
+        <div class="panel-sub">Answer and submit your assignments.</div>
+        <div id="hw-list-wrap"></div>
+      </div>
+
+      <!-- COURSES -->
+      <div class="panel" id="panel-courses">
+        <div class="panel-title">Video Courses 🎬</div>
+        <div class="panel-sub">Courses your parent has unlocked for you.</div>
+        <div class="courses-grid" id="courses-grid"></div>
+      </div>
+
+      <!-- GRADES -->
+      <div class="panel" id="panel-grades">
+        <div class="panel-title">My Grades 📊</div>
+        <div class="panel-sub">Grades set by your tutor.</div>
+        <div class="grades-grid" id="grades-grid"></div>
+
+        <!-- LINKING KEY -->
+        <div style="margin-top:2rem;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.2rem 1.4rem">
+          <div style="font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem">Your linking code</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.8rem">Share this code with your parent so they can link to your account.</p>
+          <div id="linking-key-display" style="font-family:'Nunito',sans-serif;font-size:2rem;font-weight:900;letter-spacing:0.2em;color:var(--text);background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:0.6rem 1.2rem;display:inline-block">——</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Firebase already initialised by firebase-auth.js ─────────
+  // All helper functions (firebaseLogin, onAuthReady etc.) available globally
+
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let currentUser = null;
+  let calY2 = new Date().getFullYear(), calM2 = new Date().getMonth();
+
+  function ini(u){return((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase();}
+  function toast(m,t='ok'){const el=document.getElementById('toast');el.textContent=(t==='ok'?'✓ ':'⚠ ')+m;el.className='toast '+t+' show';setTimeout(()=>el.classList.remove('show'),3000);}
+  function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+
+  // ── Init via Firebase auth state ──────────────────────────────
+  onAuthReady(async (user) => {
+    if (!user || user.role === 'parent') {
+      document.getElementById('login-wall').style.display = 'block';
+      return;
+    }
+    currentUser = user;
+    cacheUser(user);
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('hdr-av').textContent  = ini(user);
+    document.getElementById('hdr-name').textContent = user.firstName;
+    document.getElementById('greeting').textContent = `Hey ${user.firstName}! 👋`;
+    await renderAll();
+  });
+
+  async function doLogout() {
+    await firebaseLogout();
+    clearCache();
+    location.href = 'tutoring-site.html';
+  }
+
+  function showPanel(name){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+    document.getElementById('panel-'+name).classList.add('active');
+    const sbEl=document.getElementById('sb-'+name);
+    if(sbEl) sbEl.classList.add('active');
+    const navBtns=[...document.querySelectorAll('.nav-link')];
+    const names=['overview','classes','homework','courses','grades'];
+    if(navBtns[names.indexOf(name)]) navBtns[names.indexOf(name)].classList.add('active');
+  }
+
+  async function renderAll(){
+    await Promise.all([renderOverview(), renderCalendar(), renderClasses(), renderHomework(), renderCourses(), renderGrades()]);
+  }
+
+  // ── OVERVIEW ─────────────────────────────────────────────────
+  async function renderOverview(){
+    const uid = currentUser.uid;
+    const [classes, hw, enrollments, grades] = await Promise.all([
+      getStudentClasses(uid),
+      getHomeworkForStudent(uid),
+      getStudentEnrollments(uid),
+      getStudentGrades(uid),
+    ]);
+    const pending = hw.filter(async h => !(await getSubmission(h.id, uid)));
+    // count pending synchronously from cache
+    const gradeVals = Object.values(grades).filter(v=>v!==null&&v!==undefined&&v!=='');
+    const avg = gradeVals.length ? Math.round(gradeVals.reduce((a,b)=>a+parseFloat(b),0)/gradeVals.length*10)/10 : '—';
+
+    document.getElementById('ov-classes').textContent  = classes.length;
+    document.getElementById('ov-hw').textContent       = hw.length;
+    document.getElementById('ov-courses').textContent  = enrollments.length;
+    document.getElementById('ov-grade').textContent    = avg;
+
+    // Live class
+    const live = classes.find(c=>c.status==='live');
+    const liveEl = document.getElementById('overview-live');
+    if(live){
+      liveEl.innerHTML=`<div class="live-banner">
+        <div class="live-info"><div class="live-dot"></div><div class="live-text">
+          <div class="live-tag">🔴 Live right now</div>
+          <div class="live-name">${live.subject}</div>
+          <div class="live-meta">${live.tutor?'with '+live.tutor:''} ${live.time?'· '+live.time:''}</div>
+        </div></div>
+        ${live.link?`<a class="join-btn" href="${live.link}" target="_blank">Join class →</a>`:`<button class="join-btn" style="background:var(--surface2);color:var(--muted);cursor:default">Link coming</button>`}
+      </div>`;
+    } else liveEl.innerHTML='';
+
+    // Upcoming
+    const today=new Date(); today.setHours(0,0,0,0);
+    const upcoming=classes.filter(c=>{try{const d=new Date(c.date.replace(/-/g,'/'));return d>=today&&c.status!=='live';}catch{return false;}}).slice(0,3);
+    const upEl=document.getElementById('overview-upcoming');
+    upEl.innerHTML = upcoming.length ? `<div style="font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:0.8rem">UPCOMING</div>
+      <div class="class-list">${upcoming.map(c=>classCardHTML(c)).join('')}</div>` : '';
+  }
+
+  // ── CALENDAR ─────────────────────────────────────────────────
+  function shiftCal(d){calM2+=d;if(calM2>11){calM2=0;calY2++;}if(calM2<0){calM2=11;calY2--;}renderCalendar();}
+
+  async function renderCalendar(){
+    document.getElementById('cal-month').textContent=MONTHS[calM2]+' '+calY2;
+    const grid=document.getElementById('cal-grid'); grid.innerHTML='';
+    const today=new Date();
+    const firstDay=new Date(calY2,calM2,1).getDay();
+    const days=new Date(calY2,calM2+1,0).getDate();
+    const uid=currentUser.uid;
+    const [classes, hw] = await Promise.all([getStudentClasses(uid), getHomeworkForStudent(uid)]);
+
+    const byDate={};
+    classes.forEach(c=>{if(!byDate[c.date])byDate[c.date]=[];byDate[c.date].push(c);});
+    const hwByDate={};
+    hw.filter(h=>h.dueDate).forEach(h=>{if(!hwByDate[h.dueDate])hwByDate[h.dueDate]=[];hwByDate[h.dueDate].push(h);});
+
+    for(let i=0;i<firstDay;i++){const e=document.createElement('div');e.className='cal-cell empty';grid.appendChild(e);}
+    for(let d=1;d<=days;d++){
+      const key=calY2+'-'+(calM2+1)+'-'+d;
+      const padKey=calY2+'-'+String(calM2+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const evs=byDate[key]||[];
+      const hwEvs=hwByDate[padKey]||hwByDate[key]||[];
+      const isToday=today.getFullYear()===calY2&&today.getMonth()===calM2&&today.getDate()===d;
+      const cell=document.createElement('div');
+      cell.className='cal-cell'+(isToday?' today':'');
+      let html=`<span class="cal-dn">${d}</span>`;
+      evs.forEach(e=>{html+=`<div class="cal-ev ${e.status==='live'?'ev-live':'ev-class'}">${e.subject}</div>`;});
+      hwEvs.forEach(h=>{html+=`<div class="cal-ev ev-hw">📝 ${h.title}</div>`;});
+      cell.innerHTML=html;
+      grid.appendChild(cell);
+    }
+  }
+
+  async function renderClasses(){
+    const uid=currentUser.uid;
+    const classes=await getStudentClasses(uid);
+    const today=new Date(); today.setHours(0,0,0,0);
+    const upcoming=classes.filter(c=>{try{return new Date(c.date.replace(/-/g,'/'))>=today;}catch{return true;}})
+      .sort((a,b)=>new Date(a.date.replace(/-/g,'/'))-new Date(b.date.replace(/-/g,'/')));
+    const el=document.getElementById('class-list');
+    el.innerHTML = upcoming.length
+      ? '<div class="class-list">'+upcoming.map(c=>classCardHTML(c)).join('')+'</div>'
+      : `<div class="empty"><div class="ei">📭</div><p>No classes scheduled yet.</p></div>`;
+  }
+
+  function classCardHTML(c){
+    const d=new Date(c.date.replace(/-/g,'/')).toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+    const dotCls=c.status==='live'?'live':c.status==='soon'?'soon':'sched';
+    const btn=c.status==='live'&&c.link?`<a class="cc-join" href="${c.link}" target="_blank">Join →</a>`:`<span class="cc-join inactive">${c.status==='soon'?'Soon':'Scheduled'}</span>`;
+    return `<div class="class-card ${c.status==='live'?'live':''}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="cc-dot ${dotCls}"></div>
+        <div><div class="cc-subj">${c.subject}</div><div class="cc-name">${d}${c.time?' at '+c.time:''}</div><div class="cc-time">${c.note||''}${c.tutor?' · with '+c.tutor:''}</div></div>
+      </div>${btn}</div>`;
+  }
+
+  // ── HOMEWORK ─────────────────────────────────────────────────
+  async function renderHomework(){
+    const uid=currentUser.uid;
+    const all=await getHomeworkForStudent(uid);
+    const el=document.getElementById('hw-list-wrap');
+    if(!all.length){el.innerHTML=`<div class="empty"><div class="ei">🎉</div><p>No homework right now!</p></div>`;return;}
+    // Load all submissions in parallel
+    const subs = await Promise.all(all.map(h=>getSubmission(h.id,uid)));
+    el.innerHTML='<div class="hw-list">'+all.map((h,i)=>hwCardHTML(h,uid,subs[i])).join('')+'</div>';
+
+    // pending count badge
+    const pending=subs.filter(s=>!s).length;
+    const badge=document.getElementById('hw-badge');
+    badge.textContent=pending; badge.style.display=pending?'':'none';
+  }
+
+  function hwCardHTML(h,uid,sub){
+    const graded=sub&&sub.grade!==null&&sub.grade!==undefined&&sub.grade!=='';
+    let bc='hb-todo',bt='To do';
+    if(graded){bc='hb-graded';bt='Graded: '+sub.grade+'/10';}
+    else if(sub){bc='hb-done';bt='Submitted ✓';}
+    const due=h.dueDate?new Date(h.dueDate).toLocaleDateString([],{month:'short',day:'numeric'}):'';
+    const qs=(h.questions||[]).map((q,qi)=>`<div class="hw-q">
+      <div class="hw-qnum">Q${qi+1}</div><div class="hw-qtext">${q.text}</div>
+      <textarea class="hw-input" id="hwa-${h.id}-${qi}" rows="2" ${sub?'disabled':''}>${sub?.answers?.[qi]||''}</textarea>
+    </div>`).join('');
+    return `<div class="hw-card">
+      <div class="hw-head" onclick="document.getElementById('hwb-${h.id}').classList.toggle('open')">
+        <div><div class="hw-subj">${h.subject}</div><div class="hw-title">${h.title}</div><div class="hw-due">${due?'Due '+due:''}</div></div>
+        <span class="hw-badge ${bc}">${bt}</span>
+      </div>
+      <div class="hw-body" id="hwb-${h.id}">
+        ${h.instructions?`<div class="hw-instructions">${h.instructions}</div>`:''}
+        ${qs}
+        ${!sub?`<button class="hw-submit-btn" onclick="submitHW('${h.id}',${(h.questions||[]).length})">Submit →</button>`:''}
+        ${graded?`<div class="hw-grade-chip">🎓 ${sub.grade}/10</div>${sub.feedback?`<div class="hw-feedback">💬 ${sub.feedback}</div>`:''}`
+          :sub?`<div style="font-size:0.8rem;color:var(--green);margin-top:0.5rem">✅ Submitted — waiting for grade</div>`:''}
+      </div></div>`;
+  }
+
+  async function submitHW(hwId,qCount){
+    const answers=[];let ok=true;
+    for(let i=0;i<qCount;i++){const v=document.getElementById('hwa-'+hwId+'-'+i)?.value?.trim()||'';if(!v)ok=false;answers.push(v);}
+    if(!ok){toast('Answer all questions first!','err');return;}
+    await submitHomework(hwId,currentUser.uid,answers);
+    toast('Homework submitted! ✓');
+    renderHomework();
+  }
+
+  // ── COURSES ──────────────────────────────────────────────────
+  async function renderCourses(){
+    const uid=currentUser.uid;
+    const [enrollments, allCourses] = await Promise.all([getStudentEnrollments(uid), getPublishedCourses()]);
+    const unlockedIdxs = enrollments.map(e=>e.courseIdx);
+    const el=document.getElementById('courses-grid');
+    if(!allCourses.length){el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="ei">🎬</div><p>No courses available yet.</p></div>`;return;}
+    const thumbs=['ct-m','ct-s','ct-c','ct-f','ct-gen'];
+    const icons=['📐','⚗️','💡','🇫🇷','📚'];
+    el.innerHTML=allCourses.map((c,i)=>{
+      const isUnlocked=unlockedIdxs.includes(c._idx);
+      const tc=thumbs[i%thumbs.length], ic=icons[i%icons.length];
+      const prog=getProgressLocal(c._idx,uid);
+      const done=Object.values(prog).filter(p=>p?.done).length;
+      const total=c.lessons?.length||0;
+      const pct=total?Math.round(done/total*100):0;
+      if(!isUnlocked) return `<div class="course-card locked-card">
+        <div class="course-thumb ${tc}">${ic}<span class="lock-badge">🔒 Locked</span></div>
+        <div class="course-body"><div class="course-subj">${c.subject}</div><div class="course-name">${c.name}</div>
+        <div class="course-meta">Ask your parent to unlock this</div></div></div>`;
+      return `<a class="course-card" href="video.html?idx=${c._idx}">
+        <div class="course-thumb ${tc}">${ic}
+          <div class="course-prog-bar"><div class="course-prog-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="course-body"><div class="course-subj">${c.subject}</div><div class="course-name">${c.name}</div>
+        <div class="course-meta">${done}/${total} lessons · ${pct}% done</div></div></a>`;
+    }).join('');
+    document.getElementById('ov-courses').textContent=unlockedIdxs.length;
+  }
+
+  function getPublishedCourses(){try{const a=JSON.parse(localStorage.getItem('ss_courses'))||[];return a.map((c,i)=>({...c,_idx:i})).filter(c=>c.published);}catch{return[];}}
+  function getProgressLocal(courseIdx,uid){try{return JSON.parse(localStorage.getItem('ss_vprog_'+courseIdx))||{};}catch{return{};}}
+
+  // ── GRADES ───────────────────────────────────────────────────
+  async function renderGrades(){
+    const grades=await getStudentGrades(currentUser.uid);
+    const el=document.getElementById('grades-grid');
+    const entries=Object.entries(grades).filter(([,v])=>v!==null&&v!=='');
+    if(!entries.length){el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="ei">📊</div><p>No grades yet.</p></div>`;}
+    else {
+      el.innerHTML=entries.map(([subj,val])=>{
+        const n=parseFloat(val);
+        const cls=n>=8?'g-high':n>=5?'g-mid':'g-low';
+        return `<div class="grade-card"><div class="grade-subj">${subj}</div><div class="grade-val ${cls}">${val}</div>
+          <div class="grade-bar"><div class="grade-fill" style="width:${n*10}%"></div></div></div>`;
+      }).join('');
+      const avg=Math.round(entries.reduce((a,[,v])=>a+parseFloat(v),0)/entries.length*10)/10;
+      document.getElementById('ov-grade').textContent=avg;
+    }
+    // Show linking key from Firestore profile
+    const keyEl = document.getElementById('linking-key-display');
+    if (keyEl && currentUser.linkingKey) keyEl.textContent = currentUser.linkingKey;
+  }
+</script>
+</body>
+</html>

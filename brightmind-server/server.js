@@ -42,6 +42,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Keep-alive: ping ourselves every 14 minutes so Render free tier doesn't sleep
+if (process.env.RENDER_EXTERNAL_URL) {
+  const https = require('https');
+  setInterval(() => {
+    const url = process.env.RENDER_EXTERNAL_URL + '/api/health';
+    https.get(url, () => {}).on('error', () => {});
+  }, 14 * 60 * 1000); // every 14 minutes
+}
+
 app.post('/api/signup', authLimiter, async (req, res) => {
   try {
     const { firstName, lastName, email, password, grade } = req.body;
