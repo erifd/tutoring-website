@@ -4,12 +4,12 @@
 //  console.firebase.google.com → Project Settings → Your apps → Web
 // ─────────────────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyBfHhEOEc8nUS9OzSTsN71QLRetLdtMTVU",
+  authDomain:        "smartscope-a5d71.firebaseapp.com",
+  projectId:         "smartscope-a5d71",
+  storageBucket:     "smartscope-a5d71.firebasestorage.app",
+  messagingSenderId: "131167051475",
+  appId:             "1:131167051475:web:7e1bd97dec8b3c9bcafe26"
 };
 
 // ── Firestore data structure (for reference) ─────────────────────
