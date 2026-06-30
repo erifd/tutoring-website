@@ -294,6 +294,13 @@
       .nav-links li:not(:last-child):not(:nth-last-child(2)) { display: none; }
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-auth.js"></script>
 </head>
 <body>
 
@@ -309,7 +316,7 @@
     <li><button id="nav-login-btn" onclick="openLogin()">Log in</button></li>
     <li><a href="#contact" class="nav-cta">Get started</a></li>
   </ul>
-  <div id="nav-user-pill" onclick="openDashboard()">
+  <div id="nav-user-pill" onclick="goToDashboard()">
     <div class="pill-avatar" id="pill-av">?</div>
     <span id="pill-name"></span>
   </div>
@@ -323,25 +330,56 @@
       <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Log in</button>
       <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Sign up</button>
     </div>
-    <div id="panel-login">
+    <!-- ROLE PICKER -->
+    <div id="panel-role">
+      <div class="modal-title">Welcome! 👋</div>
+      <div class="modal-sub" style="margin-bottom:1.4rem">Are you a student or a parent?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.2rem">
+        <div onclick="setRole('student')" style="border:2px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:2rem;margin-bottom:0.4rem">🎓</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800">I'm a Student</div>
+          <div style="font-size:0.72rem;color:var(--mid);margin-top:2px">Classes, homework, courses</div>
+        </div>
+        <div onclick="setRole('parent')" style="border:2px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:2rem;margin-bottom:0.4rem">👨‍👩‍👧</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800">I'm a Parent</div>
+          <div style="font-size:0.72rem;color:var(--mid);margin-top:2px">Track progress, buy courses</div>
+        </div>
+      </div>
+      <div class="modal-note">New here? <a href="#" onclick="switchTab('signup');return false;">Create an account</a></div>
+    </div>
+
+    <div id="panel-login" style="display:none">
+      <div style="margin-bottom:1rem"><a href="#" onclick="switchTab('role');return false;" style="font-size:0.8rem;color:var(--mid);text-decoration:none">← Back</a>
+      <span id="login-role-badge" style="background:var(--accent-light);color:var(--accent-dark);font-size:0.7rem;font-weight:700;padding:2px 9px;border-radius:100px;margin-left:8px">Student</span></div>
       <div class="modal-title">Hey, welcome back! 👋</div>
-      <div class="modal-sub">Log in to see your classes and grades.</div>
+      <div class="modal-sub">Log in to access your dashboard.</div>
       <div class="modal-field"><label>Email</label><input type="email" id="login-email" placeholder="you@email.com" /></div>
       <div class="modal-field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" /></div>
       <div class="modal-error" id="login-error"></div>
       <button class="modal-btn" id="login-btn" onclick="doLogin()">Let's go →</button>
-      <div class="modal-note">New here? <a href="#" onclick="switchTab('signup');return false;">Create an account</a></div>
+      <div class="modal-note" style="margin-top:0.8rem">No account? <a href="#" onclick="switchTab('signup');return false;">Sign up free</a></div>
     </div>
+
     <div id="panel-signup" style="display:none">
+      <div style="margin-bottom:1rem"><a href="#" onclick="switchTab('role');return false;" style="font-size:0.8rem;color:var(--mid);text-decoration:none">← Back</a></div>
       <div class="modal-title">Join SmartScope 🚀</div>
       <div class="modal-sub">Takes 30 seconds, totally free.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.9rem">
+        <div onclick="setSignupRole('student')" id="su-role-student" style="border:2px solid var(--accent);border-radius:10px;padding:0.6rem;text-align:center;cursor:pointer;background:var(--accent-light)">
+          <span style="font-size:1rem">🎓</span> <span style="font-size:0.78rem;font-weight:700;color:var(--accent-dark)">Student</span>
+        </div>
+        <div onclick="setSignupRole('parent')" id="su-role-parent" style="border:2px solid var(--border);border-radius:10px;padding:0.6rem;text-align:center;cursor:pointer">
+          <span style="font-size:1rem">👨‍👩‍👧</span> <span style="font-size:0.78rem;font-weight:700;color:var(--mid)">Parent</span>
+        </div>
+      </div>
       <div class="two-col">
         <div class="modal-field"><label>First name</label><input type="text" id="su-first" placeholder="Jane" /></div>
         <div class="modal-field"><label>Last name</label><input type="text" id="su-last" placeholder="Smith" /></div>
       </div>
       <div class="modal-field"><label>Email</label><input type="email" id="su-email" placeholder="you@email.com" /></div>
       <div class="modal-field"><label>Password <span style="font-weight:400;color:var(--mid)">(min 8 chars)</span></label><input type="password" id="su-pass" placeholder="••••••••" /></div>
-      <div class="modal-field">
+      <div class="modal-field" id="su-grade-wrap">
         <label>Grade</label>
         <select id="su-grade">
           <option value="">Pick your grade…</option>
@@ -351,7 +389,7 @@
       </div>
       <div class="modal-error" id="signup-error"></div>
       <button class="modal-btn" id="signup-btn" onclick="doSignup()">Create my account →</button>
-      <div class="modal-note">Already have one? <a href="#" onclick="switchTab('login');return false;">Log in</a></div>
+      <div class="modal-note" style="margin-top:0.8rem">Already have one? <a href="#" onclick="switchTab('login');return false;">Log in</a></div>
     </div>
   </div>
 </div>
@@ -710,27 +748,18 @@
 <script>
   const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000/api'
-    : 'https://tutoring-website-production-4e6b.up.railway.app/api';
+    : 'https://YOUR-APP-NAME.onrender.com/api';
 
   const ADMIN_EMAIL = 'admin@smartscope.com';
   const ADMIN_PASS  = 'Admin2026!';
   const SUBJECTS = ['Mathematics','Physics','Chemistry','Biology','English / Writing','Computer Science','French'];
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+  // store kept for admin session only; Firebase handles real auth
   const store = {
-    get token()  { return localStorage.getItem('ss_tok'); },
-    save(t)      { localStorage.setItem('ss_tok', t); },
-    clear()      { localStorage.removeItem('ss_tok'); localStorage.removeItem('ss_user'); },
-    get user()   { try { return JSON.parse(localStorage.getItem('ss_user')); } catch { return null; } },
-    saveUser(u)  { localStorage.setItem('ss_user', JSON.stringify(u)); },
-  };
-
-  // Per-student calendar + grades stored in localStorage keyed by user id
-  const studentData = {
-    getClasses(uid)      { try { return JSON.parse(localStorage.getItem('ss_cal_'+uid)) || []; } catch { return []; } },
-    saveClasses(uid, c)  { localStorage.setItem('ss_cal_'+uid, JSON.stringify(c)); },
-    getGrades(uid)       { try { return JSON.parse(localStorage.getItem('ss_grades_'+uid)) || {}; } catch { return {}; } },
-    saveGrades(uid, g)   { localStorage.setItem('ss_grades_'+uid, JSON.stringify(g)); },
+    get user()  { return getCachedUser(); },
+    saveUser(u) { cacheUser(u); },
+    clear()     { clearCache(); },
   };
 
   let currentUser = null;
@@ -757,316 +786,274 @@
   }
 
   async function fetchCount() {
-    try { const r = await fetch(API+'/stats'); if(r.ok){ const d=await r.json(); document.getElementById('hero-count').textContent=d.studentCount; } } catch {}
+    // Try Railway stats first, fallback silently
+    try {
+      const r = await fetch(API+'/stats', { signal: AbortSignal.timeout(3000) });
+      if(r.ok){ const d=await r.json(); document.getElementById('hero-count').textContent=d.studentCount; }
+    } catch {}
   }
 
-  // ── tabs ──────────────────────────────────────────────────────
+  // ── role + tab logic ─────────────────────────────────────────
+  let loginRole = 'student';
+  let signupRole = 'student';
+
+  function setRole(role) {
+    loginRole = role;
+    const badge = document.getElementById('login-role-badge');
+    if (badge) badge.textContent = role==='student' ? '🎓 Student' : '👨‍👩‍👧 Parent';
+    switchTab('login');
+  }
+
+  function setSignupRole(role) {
+    signupRole = role;
+    const gradeWrap = document.getElementById('su-grade-wrap');
+    if (gradeWrap) gradeWrap.style.display = role==='student' ? '' : 'none';
+    const sEl = document.getElementById('su-role-student');
+    const pEl = document.getElementById('su-role-parent');
+    if (sEl) { sEl.style.border = role==='student'?'2px solid var(--accent)':'2px solid var(--border)'; sEl.style.background = role==='student'?'var(--accent-light)':''; }
+    if (pEl) { pEl.style.border = role==='parent'?'2px solid var(--accent)':'2px solid var(--border)'; pEl.style.background = role==='parent'?'var(--accent-light)':''; }
+  }
+
   function switchTab(t) {
-    const isL = t==='login';
-    document.getElementById('panel-login').style.display = isL?'':'none';
-    document.getElementById('panel-signup').style.display = isL?'none':'';
-    document.getElementById('tab-login').classList.toggle('active',isL);
-    document.getElementById('tab-signup').classList.toggle('active',!isL);
+    ['role','login','signup'].forEach(p => {
+      const el = document.getElementById('panel-'+p);
+      if (el) el.style.display = p===t ? '' : 'none';
+    });
+    // sync tab-bar buttons if visible
+    const tl = document.getElementById('tab-login');
+    const ts = document.getElementById('tab-signup');
+    if (tl) { tl.classList.toggle('active', t==='login'); }
+    if (ts) { ts.classList.toggle('active', t==='signup'); }
   }
 
   // ── login ─────────────────────────────────────────────────────
-  function openLogin() { document.getElementById('login-modal').classList.add('open'); document.getElementById('login-error').style.display='none'; }
+  function openLogin() {
+    document.getElementById('login-modal').classList.add('open');
+    document.getElementById('login-error').style.display='none';
+    switchTab('role'); // always start at role picker
+  }
   function closeLogin() { document.getElementById('login-modal').classList.remove('open'); }
+
 
   async function doLogin() {
     const email = document.getElementById('login-email').value.trim();
     const pass  = document.getElementById('login-pass').value;
     const err   = document.getElementById('login-error');
     const btn   = document.getElementById('login-btn');
-    err.style.display='none';
+    err.style.display = 'none';
     if (!email||!pass) { err.textContent='Fill both fields!'; err.style.display='block'; return; }
-    if (email===ADMIN_EMAIL && pass===ADMIN_PASS) {
-      isAdmin=true;
-      sessionStorage.setItem('ss_admin','1'); // persist across pages
+    if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+      isAdmin = true; sessionStorage.setItem('ss_admin','1');
       showPill({firstName:'Admin',lastName:''}); closeLogin(); openAdmin(); return;
     }
-    btn.textContent='Logging in…'; btn.disabled=true;
+    btn.textContent = 'Logging in…'; btn.disabled = true;
     try {
-      const r = await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
-      const d = await r.json();
-      if (!r.ok) { err.textContent=d.error||'Wrong email or password 🤔'; err.style.display='block'; return; }
-      store.save(d.token); showPill(d.user); closeLogin(); openDashboard();
-    } catch { err.textContent='Can\'t reach the server, try again!'; err.style.display='block'; }
-    finally { btn.textContent='Let\'s go →'; btn.disabled=false; }
+      const user = await firebaseLogin(email, pass);
+      cacheUser(user); showPill(user); closeLogin(); fetchCount();
+      if (user.role === 'parent') location.href = 'parent.html';
+      else location.href = 'student.html';
+    } catch(e) {
+      const msg = (e.code==='auth/wrong-password'||e.code==='auth/user-not-found'||e.code==='auth/invalid-credential')
+        ? 'Wrong email or password 🤔' : (e.message||'Login failed');
+      err.textContent = msg; err.style.display = 'block';
+    } finally { btn.textContent = "Let's go →"; btn.disabled = false; }
   }
 
-  // ── signup ────────────────────────────────────────────────────
   async function doSignup() {
-    const firstName=document.getElementById('su-first').value.trim();
-    const lastName=document.getElementById('su-last').value.trim();
-    const email=document.getElementById('su-email').value.trim();
-    const password=document.getElementById('su-pass').value;
-    const grade=document.getElementById('su-grade').value?parseInt(document.getElementById('su-grade').value):null;
-    const err=document.getElementById('signup-error');
-    const btn=document.getElementById('signup-btn');
-    err.style.display='none';
+    const firstName = document.getElementById('su-first').value.trim();
+    const lastName  = document.getElementById('su-last').value.trim();
+    const email     = document.getElementById('su-email').value.trim();
+    const password  = document.getElementById('su-pass').value;
+    const grade     = document.getElementById('su-grade').value ? parseInt(document.getElementById('su-grade').value) : null;
+    const err = document.getElementById('signup-error');
+    const btn = document.getElementById('signup-btn');
+    err.style.display = 'none';
     if (!firstName||!lastName||!email||!password){err.textContent='Fill everything in!';err.style.display='block';return;}
     if (password.length<8){err.textContent='Password needs at least 8 characters';err.style.display='block';return;}
-    btn.textContent='Creating…'; btn.disabled=true;
+    btn.textContent = 'Creating…'; btn.disabled = true;
     try {
-      const r=await fetch(API+'/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName,lastName,email,password,grade})});
-      const d=await r.json();
-      if (!r.ok){err.textContent=d.error||'Something went wrong 😬';err.style.display='block';return;}
-      store.save(d.token); showPill(d.user); closeLogin(); openDashboard(); fetchCount();
-    } catch {err.textContent='Can\'t reach the server!';err.style.display='block';}
-    finally {btn.textContent='Create my account →';btn.disabled=false;}
+      const user = await firebaseSignup({ firstName, lastName, email, password, role: signupRole, grade });
+      cacheUser(user); showPill(user); closeLogin(); fetchCount();
+      if (signupRole === 'parent') location.href = 'parent.html';
+      else location.href = 'student.html';
+    } catch(e) {
+      const msg = e.code==='auth/email-already-in-use'
+        ? 'An account with that email already exists.'
+        : (e.message||'Something went wrong');
+      err.textContent = msg; err.style.display = 'block';
+    } finally { btn.textContent = 'Create my account →'; btn.disabled = false; }
   }
 
-  // ── dashboard ─────────────────────────────────────────────────
-  function openDashboard() {
-    if (isAdmin){openAdmin();return;}
-    if (!store.token){openLogin();return;}
-    document.getElementById('dashboard-modal').classList.add('open');
-    renderCalendar();
-    renderGrades();
-  }
-  function closeDashboard(){document.getElementById('dashboard-modal').classList.remove('open');}
-
-  // ── CALENDAR ──────────────────────────────────────────────────
-  function changeMonth(d){ calMonth+=d; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
-
-  function renderCalendar() {
-    document.getElementById('cal-month').textContent = MONTHS[calMonth]+' '+calYear;
-    const grid = document.getElementById('cal-grid');
-    grid.innerHTML='';
-    const today = new Date();
-    const firstDay = new Date(calYear,calMonth,1).getDay();
-    const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
-    const uid = currentUser?.id || 'guest';
-    const classes = studentData.getClasses(uid);
-
-    // group by date string
-    const byDate = {};
-    classes.forEach(c => {
-      const key = c.date; // "YYYY-M-D"
-      if (!byDate[key]) byDate[key] = [];
-      byDate[key].push(c);
-    });
-
-    for (let i=0;i<firstDay;i++) {
-      const e=document.createElement('div'); e.className='cal-cell empty'; grid.appendChild(e);
-    }
-    for (let d=1;d<=daysInMonth;d++) {
-      const key = calYear+'-'+(calMonth+1)+'-'+d;
-      const evs = byDate[key]||[];
-      const isToday = today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
-      const cell = document.createElement('div');
-      cell.className='cal-cell'+(isToday?' today':'')+(evs.length?' has-class':'');
-      cell.innerHTML=`<div class="day-n">${d}</div>`+evs.map(e=>`<div class="cal-ev ${e.status==='live'?'ev-green':'ev-blue'}">${e.subject}</div>`).join('');
-      if (!cell.classList.contains('empty')) {
-        cell.innerHTML += `<div class="add-class-hint">+ book</div>`;
-        cell.onclick = () => openSchedModal(calYear,calMonth+1,d);
-      }
-      grid.appendChild(cell);
-    }
+  // ── dashboard routing ─────────────────────────────────────────
+  function goToDashboard() {
+    if (isAdmin) { openAdmin(); return; }
+    const u = getCachedUser();
+    if (!u) { openLogin(); return; }
+    if (u.role==='parent') location.href='parent.html';
+    else location.href='student.html';
   }
 
-  function openSchedModal(y,m,d) {
-    pendingDate = {y,m,d,key:y+'-'+m+'-'+d};
-    const label = new Date(y,m-1,d).toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
-    document.getElementById('sched-date-label').textContent = label;
-    document.getElementById('sched-subject').value='';
-    document.getElementById('sched-time').value='';
-    document.getElementById('sched-note').value='';
-    document.getElementById('sched-error').style.display='none';
-    document.getElementById('sched-modal').classList.add('open');
-  }
+  function openDashboard() { goToDashboard(); }
+  function closeDashboard() {}
 
-  function confirmBook() {
-    const subj = document.getElementById('sched-subject').value;
-    const time = document.getElementById('sched-time').value;
-    const note = document.getElementById('sched-note').value;
-    const err = document.getElementById('sched-error');
-    if (!subj||!time){err.textContent='Pick a subject and time!';err.style.display='block';return;}
-    const uid = currentUser?.id||'guest';
-    const classes = studentData.getClasses(uid);
-    classes.push({date:pendingDate.key,subject:subj,time,note,status:'scheduled'});
-    studentData.saveClasses(uid,classes);
-    document.getElementById('sched-modal').classList.remove('open');
-    renderCalendar();
-  }
-
-  // ── GRADES ────────────────────────────────────────────────────
-  function renderGrades() {
-    const uid = currentUser?.id||'guest';
-    const grades = studentData.getGrades(uid);
-    const el = document.getElementById('dash-grades');
-    const entries = Object.entries(grades).filter(([,v])=>v!==null&&v!=='');
-    if (!entries.length) { el.innerHTML='<div class="empty-state">No grades yet — your tutor will add them! 😊</div>'; return; }
-    el.innerHTML = entries.map(([subj,val])=>{
-      const n=parseInt(val);
-      const cls=n>=8?'g-high':n>=5?'g-mid':'g-low';
-      return `<div class="grade-card"><div class="grade-subj">${subj}</div><div class="grade-val ${cls}">${val}</div><div class="grade-bar"><div class="grade-fill" style="width:${n*10}%"></div></div></div>`;
-    }).join('');
-  }
-
-  async function doLogout(){store.clear();closeDashboard();hidePill();}
-
-  // ── ADMIN ─────────────────────────────────────────────────────
-  async function openAdmin(){
+  // ── Admin panel ───────────────────────────────────────────────
+  async function openAdmin() {
     document.getElementById('admin-modal').classList.add('open');
-    await refreshAdmin();
+    await refreshAdminPanel();
   }
-  function closeAdmin(){document.getElementById('admin-modal').classList.remove('open');}
+  function closeAdmin() { document.getElementById('admin-modal').classList.remove('open'); }
 
-  async function refreshAdmin(){
-    let students=[];
-    // Fetch real students from server
-    try{
-      const r=await fetch(API+'/admin/students',{headers:{'x-admin-key':ADMIN_PASS}});
-      if(r.ok) students=(await r.json()).students||[];
-    } catch(e){ console.warn('Could not reach server:',e); }
+  async function refreshAdminPanel() {
+    let students = [];
+    try {
+      const r = await fetch(API+'/admin/students', { headers: { 'x-admin-key': ADMIN_PASS } });
+      if (r.ok) students = (await r.json()).students || [];
+    } catch {}
 
-    // Update stats
-    document.getElementById('a-students').textContent=students.length;
-    document.getElementById('hero-count').textContent=students.length;
+    document.getElementById('a-students').textContent = students.length;
+    document.getElementById('hero-count').textContent = students.length;
 
-    let totalClasses=0;
-    students.forEach(s=>{ totalClasses+=studentData.getClasses(s.id).length; });
-    document.getElementById('a-classes').textContent=totalClasses;
+    let totalClasses = 0;
+    students.forEach(s => { totalClasses += (JSON.parse(localStorage.getItem('ss_cal_'+s.id)||'[]')).length; });
+    document.getElementById('a-classes').textContent = totalClasses;
 
-    // Count published courses
-    try{
-      const courses=JSON.parse(localStorage.getItem('ss_courses'))||[];
-      document.getElementById('a-courses').textContent=courses.filter(c=>c.published).length;
-    } catch{ document.getElementById('a-courses').textContent=0; }
+    try {
+      const courses = JSON.parse(localStorage.getItem('ss_courses'))||[];
+      document.getElementById('a-courses').textContent = courses.filter(c=>c.published).length;
+    } catch { document.getElementById('a-courses').textContent = 0; }
 
-    // Student list — show real data from server
-    const listEl=document.getElementById('a-student-list');
-    if(students.length){
-      listEl.innerHTML=students.map(s=>{
-        const joined=new Date(s.createdAt).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'});
-        const classCnt=studentData.getClasses(s.id).length;
+    const listEl = document.getElementById('a-student-list');
+    if (students.length) {
+      listEl.innerHTML = students.map(s => {
+        const joined = new Date(s.createdAt).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'});
         return `<div class="student-row">
           <div style="display:flex;align-items:center;gap:10px">
             <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0">${(s.firstName?.[0]||'')+(s.lastName?.[0]||'')}</div>
-            <div>
-              <div class="student-name">${s.firstName} ${s.lastName}</div>
-              <div class="student-meta">${s.email} · Grade ${s.grade||'—'} · ${classCnt} class${classCnt!==1?'es':''} booked</div>
-            </div>
+            <div><div class="student-name">${s.firstName} ${s.lastName}</div><div class="student-meta">${s.email} · Grade ${s.grade||'—'}</div></div>
           </div>
-          <div class="student-meta" style="text-align:right">Joined<br>${joined}</div>
+          <div class="student-meta">${joined}</div>
         </div>`;
       }).join('');
     } else {
-      listEl.innerHTML='<div class="empty-state" style="padding:1rem;text-align:center">No one has signed up yet — share the site! 🚀</div>';
+      listEl.innerHTML = '<div class="empty-state">No students signed up yet!</div>';
     }
 
-    // Populate student dropdowns
-    const opts='<option value="">Pick student…</option>'+students.map(s=>`<option value="${s.id}">${s.firstName} ${s.lastName} (${s.email})</option>`).join('');
-    document.getElementById('a-stud-sel').innerHTML=opts;
-    document.getElementById('a-grade-stud').innerHTML=opts;
+    const opts = '<option value="">Pick student…</option>' + students.map(s=>`<option value="${s.id}">${s.firstName} ${s.lastName} (${s.email})</option>`).join('');
+    document.getElementById('a-stud-sel').innerHTML = opts;
+    document.getElementById('a-grade-stud').innerHTML = opts;
     renderAdminClassList();
   }
 
-  function loadStudentForAdmin(){renderAdminClassList();}
-
-  function renderAdminClassList(){
-    const uid=document.getElementById('a-stud-sel').value;
-    const el=document.getElementById('a-class-list');
-    if (!uid){el.innerHTML='';return;}
-    const classes=studentData.getClasses(uid);
-    el.innerHTML=classes.length?classes.map((c,i)=>`
+  function renderAdminClassList() {
+    const uid = document.getElementById('a-stud-sel').value;
+    const el  = document.getElementById('a-class-list');
+    if (!uid) { el.innerHTML=''; return; }
+    const classes = JSON.parse(localStorage.getItem('ss_cal_'+uid)||'[]');
+    el.innerHTML = classes.length ? classes.map((c,i)=>`
       <div class="class-item">
         <div class="class-item-info">
           <div class="ci-name">${c.subject}</div>
-          <div class="ci-meta">${c.date} at ${c.time||'—'} · <span style="color:${c.status==='live'?'var(--green)':c.status==='soon'?'var(--yellow)':'var(--mid)'}">${c.status}</span>${c.link?' · <a href="'+c.link+'" target="_blank" style="color:var(--accent)">link</a>':''}</div>
+          <div class="ci-meta">${c.date} ${c.time?'at '+c.time:''} · <span style="color:${c.status==='live'?'var(--green)':c.status==='soon'?'var(--yellow)':'var(--mid)'}">${c.status}</span></div>
         </div>
         <button class="admin-btn del" onclick="adminDelClass(${i})">Remove</button>
-      </div>`).join(''):'<div class="empty-state">No classes for this student yet.</div>';
+      </div>`).join('') : '<div class="empty-state">No classes yet.</div>';
   }
 
-  function adminAddClass(){
-    const uid=document.getElementById('a-stud-sel').value;
-    const subj=document.getElementById('a-subj').value;
-    const dt=document.getElementById('a-dt').value;
-    const link=document.getElementById('a-link').value;
-    const status=document.getElementById('a-status').value;
-    if (!uid){alert('Pick a student first!');return;}
-    if (!dt){alert('Set a date and time!');return;}
-    const d=new Date(dt);
-    const dateKey=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-    const timeStr=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    const classes=studentData.getClasses(uid);
-    classes.push({date:dateKey,subject:subj,time:timeStr,link,status});
-    studentData.saveClasses(uid,classes);
-    const ok=document.getElementById('a-class-ok');
+  function loadStudentForAdmin() { renderAdminClassList(); }
+
+  function adminAddClass() {
+    const uid    = document.getElementById('a-stud-sel').value;
+    const subj   = document.getElementById('a-subj').value;
+    const dt     = document.getElementById('a-dt').value;
+    const link   = document.getElementById('a-link').value;
+    const status = document.getElementById('a-status').value;
+    if (!uid) { alert('Pick a student first!'); return; }
+    if (!dt)  { alert('Set a date and time!'); return; }
+    const d = new Date(dt);
+    const dateKey = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    const timeStr = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const classes = JSON.parse(localStorage.getItem('ss_cal_'+uid)||'[]');
+    classes.push({ date:dateKey, subject:subj, time:timeStr, link, status, tutor:'' });
+    localStorage.setItem('ss_cal_'+uid, JSON.stringify(classes));
+    const ok = document.getElementById('a-class-ok');
     ok.style.display='block'; setTimeout(()=>ok.style.display='none',2500);
-    // update class count
-    let total=0; document.querySelectorAll('[id^="a-stud-sel"] option').forEach(()=>{});
     renderAdminClassList();
   }
 
-  function adminDelClass(i){
-    const uid=document.getElementById('a-stud-sel').value;
-    const classes=studentData.getClasses(uid);
+  function adminDelClass(i) {
+    const uid = document.getElementById('a-stud-sel').value;
+    const classes = JSON.parse(localStorage.getItem('ss_cal_'+uid)||'[]');
     classes.splice(i,1);
-    studentData.saveClasses(uid,classes);
+    localStorage.setItem('ss_cal_'+uid, JSON.stringify(classes));
     renderAdminClassList();
   }
 
-  function loadGradeInputs(){
-    const uid=document.getElementById('a-grade-stud').value;
-    const el=document.getElementById('a-grade-inputs');
-    if (!uid){el.innerHTML='';return;}
-    const grades=studentData.getGrades(uid);
-    el.innerHTML=SUBJECTS.map(s=>`<div class="gi"><label>${s}</label><input type="number" min="1" max="10" placeholder="—" data-subj="${s}" value="${grades[s]||''}" /></div>`).join('');
+  function loadGradeInputs() {
+    const uid = document.getElementById('a-grade-stud').value;
+    const el  = document.getElementById('a-grade-inputs');
+    if (!uid) { el.innerHTML=''; return; }
+    const grades = JSON.parse(localStorage.getItem('ss_grades_'+uid)||'{}');
+    el.innerHTML = SUBJECTS.map(s=>`<div class="gi"><label>${s}</label><input type="number" min="1" max="10" placeholder="—" data-subj="${s}" value="${grades[s]||''}" /></div>`).join('');
   }
 
-  function adminSaveGrades(){
-    const uid=document.getElementById('a-grade-stud').value;
-    if (!uid){alert('Pick a student!');return;}
-    const inputs=document.querySelectorAll('#a-grade-inputs input');
-    const grades={};
-    inputs.forEach(inp=>{if(inp.value)grades[inp.dataset.subj]=parseInt(inp.value);});
-    studentData.saveGrades(uid,grades);
-    const ok=document.getElementById('a-grade-ok');
+  function adminSaveGrades() {
+    const uid = document.getElementById('a-grade-stud').value;
+    if (!uid) { alert('Pick a student!'); return; }
+    const inputs = document.querySelectorAll('#a-grade-inputs input');
+    const grades = {};
+    inputs.forEach(inp => { if(inp.value) grades[inp.dataset.subj] = parseInt(inp.value); });
+    localStorage.setItem('ss_grades_'+uid, JSON.stringify(grades));
+    const ok = document.getElementById('a-grade-ok');
     ok.style.display='block'; setTimeout(()=>ok.style.display='none',2500);
   }
 
-  // ── contact form ──────────────────────────────────────────────
-  async function handleSubmit(e){
+  // ── Booking form (contact) ────────────────────────────────────
+  async function handleSubmit(e) {
     e.preventDefault();
-    const btn=document.getElementById('submitBtn');
-    btn.textContent='Sending…'; btn.disabled=true;
-    const firstName=document.getElementById('fname').value.trim();
-    const lastName=document.getElementById('lname').value.trim();
-    const email=document.getElementById('email').value.trim();
-    const grade=document.getElementById('level').value?parseInt(document.getElementById('level').value):null;
-    try{
-      const r=await fetch(API+'/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName,lastName,email,password:'ChangeMe123!',grade})});
-      const d=await r.json();
-      if(r.ok){store.save(d.token);showPill(d.user);fetchCount();btn.textContent='✓ You\'re in! We\'ll be in touch soon 🎉';}
-      else btn.textContent='✓ Got it! We\'ll reach out soon 🎉';
-    } catch {btn.textContent='✓ Got it! We\'ll reach out soon 🎉';}
-    btn.style.background='#15803D';
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Sending…'; btn.disabled = true;
+    const firstName = document.getElementById('fname').value.trim();
+    const lastName  = document.getElementById('lname').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const grade     = document.getElementById('level').value ? parseInt(document.getElementById('level').value) : null;
+    try {
+      const user = await firebaseSignup({ firstName, lastName, email, password:'ChangeMe123!', role:'student', grade });
+      cacheUser(user); showPill(user); fetchCount();
+      btn.textContent = "✓ You're in! We'll be in touch soon 🎉";
+    } catch {
+      btn.textContent = "✓ Request sent! We'll be in touch soon 🎉";
+    }
+    btn.style.background = '#15803D';
   }
 
-  // ── init ──────────────────────────────────────────────────────
-  (async()=>{
+  // ── Session restore via Firebase ──────────────────────────────
+  onAuthReady(async (fbUser) => {
     fetchCount();
-    // Restore admin session if navigated back from another page
-    if(sessionStorage.getItem('ss_admin')==='1'){
-      isAdmin=true;
+    if (sessionStorage.getItem('ss_admin')==='1') {
+      isAdmin = true;
       showPill({firstName:'Admin',lastName:''});
-    } else if(store.token){
-      try{
-        const r=await fetch(API+'/me',{headers:{Authorization:'Bearer '+store.token}});
-        if(r.ok){const d=await r.json();showPill(d.user);}
-        else store.clear();
-      } catch {}
+      return;
     }
-  })();
-
-  ['login-modal','dashboard-modal','admin-modal','sched-modal'].forEach(id=>{
-    document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+    if (fbUser) {
+      cacheUser(fbUser);
+      showPill(fbUser);
+    }
   });
-  document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+  async function doLogout() {
+    await firebaseLogout();
+    clearCache();
+    sessionStorage.removeItem('ss_admin');
+    hidePill();
+  }
+
+  // ── Backdrop close ────────────────────────────────────────────
+  ['login-modal','dashboard-modal','admin-modal','sched-modal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
+  });
+  document.getElementById('login-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
 </script>
 </body>
 </html>

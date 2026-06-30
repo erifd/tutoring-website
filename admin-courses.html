@@ -375,7 +375,7 @@ async function browseVideos(lessonIdx) {
     if (!r.ok) throw new Error('Server error');
     const d = await r.json();
     if (!d.videos.length) {
-      list.innerHTML = "<div style=\"color:var(--muted);padding:1rem\">No video files found in the server's videos folder. Add MP4 files and restart the server.</div>";
+      list.innerHTML = '<div style="color:var(--muted);padding:1rem">No video files found in the server's videos folder. Add MP4 files and restart the server.</div>';
       return;
     }
     list.innerHTML = d.videos.map(v => `
