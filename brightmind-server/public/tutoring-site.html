@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartScope Tutoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F0F4FF; --ink: #1A1F36; --mid: #6B7A99;
+      --accent: #4F6EF7; --accent-light: #E0E7FF; --accent-dark: #3B55D4;
+      --green: #22C55E; --yellow: #F59E0B; --red: #EF4444;
+      --white: #FFFFFF; --border: rgba(26,31,54,0.09); --gap: 6rem;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); font-size: 16px; line-height: 1.65; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; width: 100%; z-index: 200; background: rgba(240,244,255,0.93); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); padding: 0 5vw; display: flex; align-items: center; justify-content: space-between; height: 62px; }
+    .nav-logo { font-family: 'Nunito', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--ink); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 1.8rem; list-style: none; align-items: center; }
+    .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--mid); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta { background: var(--accent) !important; color: var(--white) !important; padding: 0.48rem 1.1rem; border-radius: 100px; font-weight: 600 !important; }
+    .nav-cta:hover { background: var(--accent-dark) !important; color: var(--white) !important; }
+    #nav-login-btn { background: none; border: 1.5px solid var(--border); color: var(--ink); padding: 0.42rem 1rem; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    #nav-login-btn:hover { border-color: var(--accent); color: var(--accent); }
+    #nav-user-pill { display: none; align-items: center; gap: 8px; background: var(--accent-light); color: var(--accent-dark); border-radius: 100px; padding: 0.32rem 1rem 0.32rem 0.4rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .pill-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+
+    /* MODALS */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,31,54,0.45); z-index: 500; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: var(--white); border-radius: 20px; padding: 2.2rem; width: 430px; max-width: 100%; position: relative; animation: popIn 0.22s ease; }
+    @keyframes popIn { from { transform: scale(0.95) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+    .modal-close { position: absolute; top: 1rem; right: 1.2rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--mid); line-height: 1; }
+    .modal-close:hover { color: var(--ink); }
+    .modal-title { font-family: 'Nunito', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .modal-sub { font-size: 0.88rem; color: var(--mid); margin-bottom: 1.4rem; }
+    .modal-field { margin-bottom: 0.9rem; }
+    .modal-field label { font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 0.3rem; }
+    .modal-field input, .modal-field select { width: 100%; padding: 0.68rem 0.95rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
+    .modal-field input:focus, .modal-field select:focus { border-color: var(--accent); background: var(--white); }
+    .modal-error { font-size: 0.8rem; color: var(--red); margin-top: 0.25rem; display: none; }
+    .modal-btn { width: 100%; background: var(--accent); color: var(--white); border: none; padding: 0.82rem; border-radius: 100px; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem; transition: background 0.2s; }
+    .modal-btn:hover { background: var(--accent-dark); }
+    .modal-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .modal-note { font-size: 0.78rem; color: var(--mid); text-align: center; margin-top: 0.7rem; }
+    .modal-note a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .tab-bar { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.4rem; }
+    .tab-btn { flex: 1; background: none; border: none; padding: 0.6rem; font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 700; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -2px; color: var(--mid); }
+    .tab-btn.active { border-bottom-color: var(--accent); color: var(--ink); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    /* DASHBOARD */
+    .dash-box { background: var(--bg); border-radius: 20px; width: 720px; max-width: 96vw; max-height: 90vh; overflow-y: auto; animation: popIn 0.22s ease; }
+    .dash-header { background: var(--accent); border-radius: 20px 20px 0 0; padding: 1.6rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .dash-header-left { display: flex; align-items: center; gap: 14px; }
+    .dash-avatar-lg { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.25); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; flex-shrink: 0; }
+    .dash-name { font-family: 'Nunito', sans-serif; font-size: 1.15rem; color: var(--white); font-weight: 800; }
+    .dash-role { font-size: 0.78rem; color: rgba(255,255,255,0.65); }
+    .dash-close { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; }
+    .dash-close:hover { color: var(--white); }
+    .dash-body { padding: 1.6rem 2rem; }
+    .dash-label { font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin-bottom: 0.9rem; margin-top: 1.6rem; }
+    .dash-label:first-child { margin-top: 0; }
+
+    /* CALENDAR */
+    .cal-wrap { background: var(--white); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+    .cal-top { background: var(--ink); padding: 1rem 1.4rem; display: flex; align-items: center; justify-content: space-between; }
+    .cal-month { font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; color: var(--white); }
+    .cal-nav-btns { display: flex; gap: 6px; }
+    .cal-nav-btns button { background: rgba(255,255,255,0.1); border: none; color: var(--white); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .cal-nav-btns button:hover { background: rgba(255,255,255,0.22); }
+    .cal-days-row { display: grid; grid-template-columns: repeat(7,1fr); background: var(--bg); border-bottom: 1px solid var(--border); }
+    .cal-day-name { text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--mid); padding: 0.5rem 0; letter-spacing: 0.04em; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); }
+    .cal-cell { min-height: 72px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 4px 5px; cursor: pointer; transition: background 0.15s; }
+    .cal-cell:nth-child(7n) { border-right: none; }
+    .cal-cell:hover { background: var(--accent-light); }
+    .cal-cell.empty { background: rgba(0,0,0,0.02); cursor: default; }
+    .cal-cell.empty:hover { background: rgba(0,0,0,0.02); }
+    .cal-cell.today .day-n { background: var(--accent); color: var(--white); border-radius: 50%; }
+    .cal-cell.has-class { background: #EEF2FF; }
+    .day-n { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: var(--mid); margin-bottom: 2px; }
+    .cal-ev { font-size: 0.65rem; font-weight: 600; border-radius: 4px; padding: 1px 5px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ev-blue { background: #DBEAFE; color: #1D4ED8; }
+    .ev-green { background: #DCFCE7; color: #15803D; }
+    .add-class-hint { font-size: 0.62rem; color: var(--mid); opacity: 0.5; text-align: center; margin-top: 2px; }
+
+    /* SCHEDULE CLASS MODAL */
+    .sched-box { background: var(--white); border-radius: 20px; padding: 2rem; width: 380px; max-width: 95vw; animation: popIn 0.2s ease; position: relative; }
+    .sched-title { font-family: 'Nunito', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.3rem; }
+    .sched-date { font-size: 0.85rem; color: var(--mid); margin-bottom: 1.2rem; }
+
+    /* GRADES */
+    .grades-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px,1fr)); gap: 0.65rem; }
+    .grade-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 0.85rem; }
+    .grade-subj { font-size: 0.7rem; color: var(--mid); margin-bottom: 3px; font-weight: 500; }
+    .grade-val { font-family: 'Nunito', sans-serif; font-size: 1.7rem; font-weight: 800; line-height: 1; }
+    .grade-bar { height: 3px; border-radius: 2px; background: var(--accent-light); margin-top: 6px; }
+    .grade-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+    .g-high { color: #15803D; } .g-mid { color: #B45309; } .g-low { color: var(--red); }
+    .empty-state { font-size: 0.88rem; color: var(--mid); padding: 0.8rem 0; }
+
+    /* ADMIN */
+    .admin-box { background: var(--bg); border-radius: 20px; width: 760px; max-width: 96vw; max-height: 92vh; overflow-y: auto; animation: popIn 0.22s ease; }
+    .admin-head { background: var(--ink); border-radius: 20px 20px 0 0; padding: 1.4rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .admin-head-title { font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--white); display: flex; align-items: center; gap: 8px; }
+    .admin-tag { background: var(--accent); color: var(--white); font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.05em; }
+    .admin-body { padding: 1.6rem 2rem; }
+    .admin-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.3rem 1.5rem; margin-bottom: 1rem; }
+    .admin-card-title { font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    .admin-row { display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: flex-end; }
+    .admin-field { flex: 1; min-width: 130px; }
+    .admin-field label { font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.28rem; color: var(--mid); }
+    .admin-field input, .admin-field select, .admin-field textarea { width: 100%; padding: 0.55rem 0.85rem; border: 1.5px solid var(--border); border-radius: 9px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
+    .admin-field input:focus, .admin-field select:focus, .admin-field textarea:focus { border-color: var(--accent); }
+    .admin-field textarea { min-height: 70px; resize: vertical; }
+    .admin-btn { background: var(--accent); color: var(--white); border: none; padding: 0.56rem 1.2rem; border-radius: 100px; font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+    .admin-btn:hover { background: var(--accent-dark); }
+    .admin-btn.del { background: #FEE2E2; color: var(--red); }
+    .admin-btn.del:hover { background: #FECACA; }
+    .admin-success { background: #DCFCE7; color: #15803D; border-radius: 8px; padding: 0.45rem 0.9rem; font-size: 0.8rem; font-weight: 600; display: none; }
+    .student-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto; }
+    .student-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border-radius: 10px; padding: 0.55rem 0.9rem; font-size: 0.85rem; }
+    .student-name { font-weight: 600; }
+    .student-meta { font-size: 0.75rem; color: var(--mid); }
+    .grade-inputs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 0.5rem; margin-top: 0.7rem; }
+    .gi label { font-size: 0.75rem; color: var(--mid); display: block; margin-bottom: 2px; }
+    .gi input { width: 100%; padding: 0.4rem 0.65rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg); font-size: 0.88rem; outline: none; }
+    .class-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border-radius: 10px; padding: 0.55rem 0.9rem; font-size: 0.84rem; margin-bottom: 0.4rem; }
+    .class-item-info { display: flex; flex-direction: column; }
+    .ci-name { font-weight: 600; }
+    .ci-meta { font-size: 0.75rem; color: var(--mid); }
+    .stats-row { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .stat-box { }
+    .stat-big { font-family: 'Nunito', sans-serif; font-size: 2rem; font-weight: 800; }
+    .stat-lbl { font-size: 0.78rem; color: var(--mid); }
+
+    /* HERO */
+    .hero-wrap { max-width: 1180px; margin: 0 auto; padding: 0 5vw; }
+    #hero { min-height: 100vh; padding-top: 62px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; }
+    .hero-text { padding-top: 3rem; }
+    .hero-pill { display: inline-flex; align-items: center; gap: 7px; background: var(--accent-light); color: var(--accent-dark); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 100px; margin-bottom: 1.4rem; }
+    .hero-pill::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+    h1 { font-family: 'Nunito', sans-serif; font-size: clamp(2.4rem,5vw,3.6rem); font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem; }
+    h1 em { color: var(--accent); font-style: normal; }
+    .hero-sub { font-size: 1.05rem; color: var(--mid); max-width: 420px; margin-bottom: 2.2rem; }
+    .hero-btns { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .btn-main { background: var(--accent); color: var(--white); padding: 0.82rem 1.8rem; border-radius: 100px; text-decoration: none; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem; transition: background 0.2s, transform 0.15s; }
+    .btn-main:hover { background: var(--accent-dark); transform: translateY(-2px); }
+    .btn-soft { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-soft:hover { color: var(--accent); }
+    .btn-soft::after { content: '→'; }
+    .hero-stats { display: flex; gap: 2.2rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .hs-num { font-family: 'Nunito', sans-serif; font-size: 1.7rem; font-weight: 800; }
+    .hs-lbl { font-size: 0.8rem; color: var(--mid); }
+    .hero-visual { position: relative; display: flex; align-items: center; justify-content: center; padding-top: 3rem; }
+    .hero-card { background: var(--white); border-radius: 20px; border: 1px solid var(--border); padding: 1.6rem; width: 290px; box-shadow: 0 16px 48px rgba(79,110,247,0.12); animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .hc-badge { display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.7rem; border-radius: 100px; margin-bottom: 0.8rem; }
+    .hc-title { font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .hc-stars { color: #F59E0B; font-size: 0.78rem; }
+    .hc-tutor { display: flex; align-items: center; gap: 9px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .hc-av { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; }
+    .hc-name { font-size: 0.82rem; font-weight: 600; }
+    .hc-sub { font-size: 0.7rem; color: var(--mid); }
+    .chip { position: absolute; background: var(--white); border: 1px solid var(--border); border-radius: 100px; padding: 0.44rem 0.9rem; font-size: 0.8rem; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.06); white-space: nowrap; }
+    .chip-1 { top: 4rem; right: -0.5rem; animation: float 5s 1s ease-in-out infinite; }
+    .chip-2 { bottom: 3.5rem; left: -0.5rem; animation: float 7s 2s ease-in-out infinite; }
+    .cdot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+    .cdot-g { background: var(--green); } .cdot-b { background: #60A5FA; }
+
+    /* MARQUEE */
+    .marquee-bar { background: var(--ink); padding: 0.9rem 0; overflow: hidden; }
+    .marquee-track { display: flex; gap: 2rem; animation: scroll 20s linear infinite; width: max-content; }
+    @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .mq-item { font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.38); letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; }
+    .mq-item span { color: var(--accent); margin: 0 0.9rem; }
+
+    /* SECTIONS */
+    section { padding: var(--gap) 5vw; }
+    .si { max-width: 1080px; margin: 0 auto; }
+    .sec-tag { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.8rem; }
+    h2 { font-family: 'Nunito', sans-serif; font-size: clamp(1.8rem,4vw,2.6rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 0.9rem; }
+    .sec-desc { font-size: 1rem; color: var(--mid); max-width: 500px; margin-bottom: 3rem; }
+
+    /* SERVICES */
+    #services { background: var(--white); }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px,1fr)); gap: 1.2rem; }
+    .svc-card { border: 1.5px solid var(--border); border-radius: 18px; padding: 1.8rem; background: var(--bg); transition: transform 0.22s, box-shadow 0.22s; }
+    .svc-card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(79,110,247,0.1); }
+    .svc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 1rem; }
+    .svc-name { font-family: 'Nunito', sans-serif; font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .svc-desc { font-size: 0.88rem; color: var(--mid); line-height: 1.55; }
+    .svc-price { margin-top: 1rem; font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+
+    /* COURSES */
+    #courses { background: var(--ink); }
+    #courses .sec-tag { color: #93C5FD; }
+    #courses h2 { color: var(--white); }
+    #courses .sec-desc { color: rgba(255,255,255,0.48); }
+    .courses-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.2rem; }
+    .course-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 18px; overflow: hidden; transition: transform 0.22s, border-color 0.22s; }
+    .course-card:hover { transform: translateY(-4px); border-color: rgba(79,110,247,0.4); }
+    .ct { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; position: relative; }
+    .ct-m { background: linear-gradient(135deg,#1e3a5f,#2563eb); }
+    .ct-s { background: linear-gradient(135deg,#14532d,#16a34a); }
+    .ct-c { background: linear-gradient(135deg,#1e1b4b,#4f46e5); }
+    .ct-f { background: linear-gradient(135deg,#7c2d12,#c2410c); }
+    .ct-play { position: absolute; bottom: 8px; right: 10px; background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.22); border-radius: 100px; padding: 2px 9px; font-size: 0.68rem; font-weight: 600; color: #fff; }
+    .ct-badge { position: absolute; top: 8px; left: 10px; background: var(--accent); color: var(--white); font-size: 0.63rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+    .cb { padding: 1.1rem 1.3rem 1.4rem; }
+    .cb-meta { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.38); margin-bottom: 0.4rem; }
+    .cb-name { font-family: 'Nunito', sans-serif; font-size: 0.98rem; font-weight: 800; color: var(--white); margin-bottom: 0.35rem; }
+    .cb-desc { font-size: 0.82rem; color: rgba(255,255,255,0.42); line-height: 1.5; margin-bottom: 0.9rem; }
+    .cb-foot { display: flex; align-items: center; justify-content: space-between; }
+    .cb-stats { font-size: 0.74rem; color: rgba(255,255,255,0.38); }
+    .cb-stats strong { color: rgba(255,255,255,0.7); }
+    .cb-price { font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; color: var(--white); }
+    .cb-cta { display: block; margin-top: 0.9rem; text-align: center; background: rgba(79,110,247,0.8); color: var(--white); padding: 0.55rem; border-radius: 100px; font-family: 'Nunito', sans-serif; font-size: 0.84rem; font-weight: 700; text-decoration: none; transition: background 0.2s; }
+    .cb-cta:hover { background: var(--accent); }
+    .courses-note { text-align: center; margin-top: 1.8rem; font-size: 0.82rem; color: rgba(255,255,255,0.28); }
+    .courses-note a { color: rgba(255,255,255,0.5); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.18); }
+
+    /* PRICING */
+    #pricing { background: var(--bg); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px,1fr)); gap: 1.2rem; align-items: start; }
+    .pc { background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; padding: 1.8rem; transition: transform 0.22s; }
+    .pc:hover { transform: translateY(-4px); }
+    .pc.hot { background: var(--ink); border-color: var(--ink); color: var(--white); }
+    .pc-lbl { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.9rem; color: var(--mid); }
+    .pc.hot .pc-lbl { color: rgba(255,255,255,0.42); }
+    .pc-price { font-family: 'Nunito', sans-serif; font-size: 2.8rem; font-weight: 800; line-height: 1; }
+    .pc-price sup { font-size: 1.2rem; vertical-align: super; }
+    .pc-per { font-size: 0.82rem; color: var(--mid); margin-top: 3px; }
+    .pc.hot .pc-per { color: rgba(255,255,255,0.48); }
+    .pc-div { border: none; border-top: 1px solid var(--border); margin: 1.3rem 0; }
+    .pc.hot .pc-div { border-color: rgba(255,255,255,0.1); }
+    .pc-features { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+    .pc-features li { font-size: 0.88rem; display: flex; align-items: center; gap: 9px; }
+    .pc-features li::before { content: '✓'; width: 18px; height: 18px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pc.hot .pc-features li::before { background: rgba(79,110,247,0.22); color: #93C5FD; }
+    .pc-badge { background: var(--accent); color: var(--white); font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; margin-left: 7px; vertical-align: middle; }
+    .pc-cta { display: block; text-align: center; margin-top: 1.8rem; padding: 0.8rem; border-radius: 100px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.92rem; text-decoration: none; transition: all 0.2s; }
+    .pc-cta-out { border: 2px solid var(--ink); color: var(--ink); }
+    .pc-cta-out:hover { background: var(--ink); color: var(--white); }
+    .pc-cta-fill { background: var(--accent); color: var(--white); }
+    .pc-cta-fill:hover { background: var(--accent-dark); }
+
+    /* CONTACT */
+    #contact { background: var(--white); }
+    .contact-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 4.5rem; align-items: start; }
+    .cp { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 1.4rem; }
+    .cp-icon { width: 38px; height: 38px; flex-shrink: 0; border-radius: 11px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+    .cp-lbl { font-size: 0.78rem; color: var(--mid); margin-bottom: 1px; }
+    .cp-val { font-size: 0.92rem; font-weight: 600; }
+    .cp-val a { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
+    form.main-form { display: flex; flex-direction: column; gap: 1.1rem; }
+    .fr { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    form.main-form label { font-size: 0.83rem; font-weight: 600; display: block; margin-bottom: 0.35rem; }
+    form.main-form input, form.main-form select, form.main-form textarea { width: 100%; padding: 0.72rem 0.95rem; border: 1.5px solid var(--border); border-radius: 11px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--ink); outline: none; transition: border-color 0.2s; }
+    form.main-form input:focus, form.main-form select:focus, form.main-form textarea:focus { border-color: var(--accent); background: var(--white); }
+    form.main-form textarea { resize: vertical; min-height: 100px; }
+    .form-submit { background: var(--accent); color: var(--white); border: none; padding: 0.85rem 2rem; border-radius: 100px; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s; align-self: flex-start; }
+    .form-submit:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .form-note { font-size: 0.78rem; color: var(--mid); }
+
+    /* FOOTER */
+    footer { background: var(--ink); color: rgba(255,255,255,0.4); padding: 2.5rem 5vw; text-align: center; font-size: 0.84rem; }
+    .footer-logo { font-family: 'Nunito', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--white); margin-bottom: 0.6rem; }
+    .footer-logo span { color: var(--accent); }
+    footer a { color: rgba(255,255,255,0.38); text-decoration: none; margin: 0 0.9rem; transition: color 0.2s; }
+    footer a:hover { color: var(--white); }
+    .footer-links { margin: 0.8rem 0; }
+
+    /* DASH LOGOUT */
+    .dash-foot { display: flex; justify-content: flex-end; margin-top: 1.4rem; }
+    .logout-btn { background: none; border: 1.5px solid var(--border); color: var(--mid); padding: 0.45rem 1.1rem; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 0.84rem; cursor: pointer; transition: all 0.2s; }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    @media (max-width: 768px) {
+      #hero { grid-template-columns: 1fr; text-align: center; padding-top: 62px; }
+      .hero-sub { margin: 0 auto 2rem; }
+      .hero-btns { justify-content: center; }
+      .hero-stats { justify-content: center; }
+      .hero-visual { display: none; }
+      .contact-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+      .fr { grid-template-columns: 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .nav-links li:not(:last-child):not(:nth-last-child(2)) { display: none; }
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-auth.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Smart<span>Scope</span></a>
+  <ul class="nav-links">
+    <li><a href="#services">Subjects</a></li>
+    <li><a href="classes.html">My Classes</a></li>
+    <li><a href="video.html">Courses</a></li>
+    <li><a href="homework.html">Homework</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><button id="nav-login-btn" onclick="openLogin()">Log in</button></li>
+    <li><a href="#contact" class="nav-cta">Get started</a></li>
+  </ul>
+  <div id="nav-user-pill" onclick="goToDashboard()">
+    <div class="pill-avatar" id="pill-av">?</div>
+    <span id="pill-name"></span>
+  </div>
+</nav>
+
+<!-- LOGIN / SIGNUP -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeLogin()">✕</button>
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Log in</button>
+      <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Sign up</button>
+    </div>
+    <!-- ROLE PICKER -->
+    <div id="panel-role">
+      <div class="modal-title">Welcome! 👋</div>
+      <div class="modal-sub" style="margin-bottom:1.4rem">Are you a student or a parent?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.2rem">
+        <div onclick="setRole('student')" style="border:2px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:2rem;margin-bottom:0.4rem">🎓</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800">I'm a Student</div>
+          <div style="font-size:0.72rem;color:var(--mid);margin-top:2px">Classes, homework, courses</div>
+        </div>
+        <div onclick="setRole('parent')" style="border:2px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:2rem;margin-bottom:0.4rem">👨‍👩‍👧</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800">I'm a Parent</div>
+          <div style="font-size:0.72rem;color:var(--mid);margin-top:2px">Track progress, buy courses</div>
+        </div>
+      </div>
+      <div class="modal-note">New here? <a href="#" onclick="switchTab('signup');return false;">Create an account</a></div>
+    </div>
+
+    <div id="panel-login" style="display:none">
+      <div style="margin-bottom:1rem"><a href="#" onclick="switchTab('role');return false;" style="font-size:0.8rem;color:var(--mid);text-decoration:none">← Back</a>
+      <span id="login-role-badge" style="background:var(--accent-light);color:var(--accent-dark);font-size:0.7rem;font-weight:700;padding:2px 9px;border-radius:100px;margin-left:8px">Student</span></div>
+      <div class="modal-title">Hey, welcome back! 👋</div>
+      <div class="modal-sub">Log in to access your dashboard.</div>
+      <div class="modal-field"><label>Email</label><input type="email" id="login-email" placeholder="you@email.com" /></div>
+      <div class="modal-field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" /></div>
+      <div class="modal-error" id="login-error"></div>
+      <button class="modal-btn" id="login-btn" onclick="doLogin()">Let's go →</button>
+      <div class="modal-note" style="margin-top:0.8rem">No account? <a href="#" onclick="switchTab('signup');return false;">Sign up free</a></div>
+    </div>
+
+    <div id="panel-signup" style="display:none">
+      <div style="margin-bottom:1rem"><a href="#" onclick="switchTab('role');return false;" style="font-size:0.8rem;color:var(--mid);text-decoration:none">← Back</a></div>
+      <div class="modal-title">Join SmartScope 🚀</div>
+      <div class="modal-sub">Takes 30 seconds, totally free.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.9rem">
+        <div onclick="setSignupRole('student')" id="su-role-student" style="border:2px solid var(--accent);border-radius:10px;padding:0.6rem;text-align:center;cursor:pointer;background:var(--accent-light)">
+          <span style="font-size:1rem">🎓</span> <span style="font-size:0.78rem;font-weight:700;color:var(--accent-dark)">Student</span>
+        </div>
+        <div onclick="setSignupRole('parent')" id="su-role-parent" style="border:2px solid var(--border);border-radius:10px;padding:0.6rem;text-align:center;cursor:pointer">
+          <span style="font-size:1rem">👨‍👩‍👧</span> <span style="font-size:0.78rem;font-weight:700;color:var(--mid)">Parent</span>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="modal-field"><label>First name</label><input type="text" id="su-first" placeholder="Jane" /></div>
+        <div class="modal-field"><label>Last name</label><input type="text" id="su-last" placeholder="Smith" /></div>
+      </div>
+      <div class="modal-field"><label>Email</label><input type="email" id="su-email" placeholder="you@email.com" /></div>
+      <div class="modal-field"><label>Password <span style="font-weight:400;color:var(--mid)">(min 8 chars)</span></label><input type="password" id="su-pass" placeholder="••••••••" /></div>
+      <div class="modal-field" id="su-grade-wrap">
+        <label>Grade</label>
+        <select id="su-grade">
+          <option value="">Pick your grade…</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+        </select>
+      </div>
+      <div class="modal-error" id="signup-error"></div>
+      <button class="modal-btn" id="signup-btn" onclick="doSignup()">Create my account →</button>
+      <div class="modal-note" style="margin-top:0.8rem">Already have one? <a href="#" onclick="switchTab('login');return false;">Log in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULE CLASS MODAL (student) -->
+<div class="modal-overlay" id="sched-modal">
+  <div class="sched-box">
+    <button class="modal-close" onclick="document.getElementById('sched-modal').classList.remove('open')">✕</button>
+    <div class="sched-title">📅 Book a class</div>
+    <div class="sched-date" id="sched-date-label">—</div>
+    <div class="modal-field"><label>Subject</label>
+      <select id="sched-subject">
+        <option value="">Pick a subject…</option>
+        <option>Mathematics</option><option>Physics</option><option>Chemistry</option>
+        <option>Biology</option><option>English / Writing</option><option>Computer Science</option><option>French</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Time</label><input type="time" id="sched-time" /></div>
+    <div class="modal-field"><label>Note (optional)</label><input type="text" id="sched-note" placeholder="e.g. chapter 4 review" /></div>
+    <div class="modal-error" id="sched-error"></div>
+    <button class="modal-btn" onclick="confirmBook()">Request this slot →</button>
+    <div class="modal-note" style="margin-top:0.6rem">Your tutor will confirm within 24 hours 🙌</div>
+  </div>
+</div>
+
+<!-- STUDENT DASHBOARD -->
+<div class="modal-overlay" id="dashboard-modal">
+  <div class="dash-box">
+    <div class="dash-header">
+      <div class="dash-header-left">
+        <div class="dash-avatar-lg" id="dash-av">?</div>
+        <div>
+          <div class="dash-name" id="dash-name">—</div>
+          <div class="dash-role" id="dash-role">Student</div>
+        </div>
+      </div>
+      <button class="dash-close" onclick="closeDashboard()">✕</button>
+    </div>
+    <div class="dash-body">
+      <div class="dash-label">Your schedule</div>
+      <div class="cal-wrap">
+        <div class="cal-top">
+          <div class="cal-month" id="cal-month">—</div>
+          <div class="cal-nav-btns">
+            <button onclick="changeMonth(-1)">‹</button>
+            <button onclick="changeMonth(1)">›</button>
+          </div>
+        </div>
+        <div class="cal-days-row">
+          <div class="cal-day-name">Sun</div><div class="cal-day-name">Mon</div><div class="cal-day-name">Tue</div>
+          <div class="cal-day-name">Wed</div><div class="cal-day-name">Thu</div><div class="cal-day-name">Fri</div><div class="cal-day-name">Sat</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <div class="dash-label" style="margin-top:1.4rem">Your grades</div>
+      <div class="grades-grid" id="dash-grades"></div>
+
+      <div class="dash-foot">
+        <button class="logout-btn" onclick="doLogout()">Log out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="admin-box">
+    <div class="admin-head">
+      <div class="admin-head-title">Admin Panel <span class="admin-tag">SmartScope</span></div>
+      <div style="display:flex;align-items:center;gap:0.7rem">
+        <a href="admin-courses.html" style="background:#4F6EF722;color:#93C5FD;border:1px solid #4F6EF755;padding:0.38rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:700;text-decoration:none;transition:all 0.2s">⚙ Course Builder →</a>
+        <button class="dash-close" onclick="closeAdmin()">✕</button>
+      </div>
+    </div>
+    <div class="admin-body">
+
+      <div class="admin-card">
+        <div class="admin-card-title">📊 Overview</div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-big" id="a-students">0</div><div class="stat-lbl">Students signed up</div></div>
+          <div class="stat-box"><div class="stat-big" id="a-classes">0</div><div class="stat-lbl">Classes booked</div></div>
+          <div class="stat-box"><div class="stat-big" id="a-courses">0</div><div class="stat-lbl">Courses published</div></div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-title">📅 Add a class to a student's calendar</div>
+        <div class="admin-row">
+          <div class="admin-field"><label>Student</label>
+            <select id="a-stud-sel" onchange="loadStudentForAdmin()">
+              <option value="">Pick student…</option>
+            </select>
+          </div>
+          <div class="admin-field"><label>Subject</label>
+            <select id="a-subj">
+              <option>Mathematics</option><option>Physics</option><option>Chemistry</option>
+              <option>Biology</option><option>English / Writing</option><option>Computer Science</option><option>French</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-row" style="margin-top:0.6rem">
+          <div class="admin-field"><label>Date & time</label><input type="datetime-local" id="a-dt" /></div>
+          <div class="admin-field"><label>Meeting link</label><input type="url" id="a-link" placeholder="https://zoom.us/..." /></div>
+          <div class="admin-field"><label>Status</label>
+            <select id="a-status">
+              <option value="scheduled">Scheduled</option>
+              <option value="live">Live now</option>
+              <option value="soon">Starting soon</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:0.8rem;display:flex;gap:0.6rem;align-items:center">
+          <button class="admin-btn" onclick="adminAddClass()">Add class</button>
+          <div class="admin-success" id="a-class-ok">Done! ✓</div>
+        </div>
+        <div id="a-class-list" style="margin-top:1rem"></div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-title">📝 Set grades</div>
+        <div class="admin-field" style="max-width:260px">
+          <label>Student</label>
+          <select id="a-grade-stud" onchange="loadGradeInputs()"><option value="">Pick student…</option></select>
+        </div>
+        <div class="grade-inputs-grid" id="a-grade-inputs"></div>
+        <div style="margin-top:0.8rem;display:flex;gap:0.6rem;align-items:center">
+          <button class="admin-btn" onclick="adminSaveGrades()">Save grades</button>
+          <div class="admin-success" id="a-grade-ok">Saved! ✓</div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-title">👤 All students</div>
+        <div class="student-list" id="a-student-list"><div class="empty-state">No students yet.</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div id="hero">
+    <div class="hero-text">
+      <div class="hero-pill">Tutoring that actually works</div>
+      <h1>Get better at school,<br>one session at a time 📚</h1>
+      <p class="hero-sub">Real tutors, real help — math, science, languages, coding, and more. Book a session and see results fast.</p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn-main">Book a free trial</a>
+        <a href="#services" class="btn-soft">See subjects</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hs-num" id="hero-count">0</div><div class="hs-lbl">Students joined</div></div>
+        <div><div class="hs-num">$5</div><div class="hs-lbl">per hour</div></div>
+        <div><div class="hs-num">6</div><div class="hs-lbl">subjects</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="chip chip-1"><span class="cdot cdot-g"></span>Class starting now</div>
+      <div class="hero-card">
+        <div class="hc-badge">Today's session</div>
+        <div class="hc-title">Mathematics — Algebra II</div>
+        <div class="hc-stars">★★★★★</div>
+        <div class="hc-tutor">
+          <div class="hc-av">SR</div>
+          <div><div class="hc-name">Sarah R.</div><div class="hc-sub">Math tutor · 5 yrs</div></div>
+        </div>
+      </div>
+      <div class="chip chip-2"><span class="cdot cdot-b"></span>Next class in 30 min</div>
+    </div>
+  </div>
+</div>
+
+<!-- MARQUEE -->
+<div class="marquee-bar">
+  <div class="marquee-track">
+    <span class="mq-item">Math<span>·</span></span><span class="mq-item">Physics<span>·</span></span>
+    <span class="mq-item">Chemistry<span>·</span></span><span class="mq-item">Biology<span>·</span></span>
+    <span class="mq-item">English<span>·</span></span><span class="mq-item">Computer Science<span>·</span></span>
+    <span class="mq-item">French<span>·</span></span>
+    <span class="mq-item">Math<span>·</span></span><span class="mq-item">Physics<span>·</span></span>
+    <span class="mq-item">Chemistry<span>·</span></span><span class="mq-item">Biology<span>·</span></span>
+    <span class="mq-item">English<span>·</span></span><span class="mq-item">Computer Science<span>·</span></span>
+    <span class="mq-item">French<span>·</span></span>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="si">
+    <p class="sec-tag">What we cover</p>
+    <h2>Pretty much everything you need 🙌</h2>
+    <p class="sec-desc">Whether you're stuck on fractions or need help with your CS assignment — we've got you.</p>
+    <div class="services-grid">
+      <div class="svc-card"><div class="svc-icon" style="background:#EFF6FF">➕</div><div class="svc-name">Mathematics</div><p class="svc-desc">Algebra, geometry, trig, calc, stats — you name it. We'll break it down until it clicks.</p><div class="svc-price">$5/hr</div></div>
+      <div class="svc-card"><div class="svc-icon" style="background:#F0FDF4">🔬</div><div class="svc-name">Sciences</div><p class="svc-desc">Physics, chemistry, biology — concepts, lab reports, exam prep, all of it.</p><div class="svc-price">$5/hr</div></div>
+      <div class="svc-card"><div class="svc-icon" style="background:#EFF6FF">📖</div><div class="svc-name">English & Writing</div><p class="svc-desc">Essays, comprehension, grammar, creative writing — we make writing way less painful.</p><div class="svc-price">$5/hr</div></div>
+      <div class="svc-card"><div class="svc-icon" style="background:#FFF7ED">🇫🇷</div><div class="svc-name">French</div><p class="svc-desc">Total beginner or just need to level up — conversational, grammar, reading and writing.</p><div class="svc-price">$5/hr</div></div>
+      <div class="svc-card"><div class="svc-icon" style="background:#EEF2FF">💻</div><div class="svc-name">Computer Science</div><p class="svc-desc">Python, Java, web dev, algorithms — whether it's homework or a personal project.</p><div class="svc-price">$5/hr</div></div>
+      <div class="svc-card"><div class="svc-icon" style="background:#FDF4FF">✏️</div><div class="svc-name">Study Skills</div><p class="svc-desc">Note-taking, time management, how to actually study — soft skills that make everything easier.</p><div class="svc-price">$5/hr</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COURSES -->
+<section id="courses">
+  <div class="si">
+    <p class="sec-tag">Video courses</p>
+    <h2>Watch, pause, rewind — learn your way 🎬</h2>
+    <p class="sec-desc">Pre-recorded courses you can binge whenever. Each video is just 50 cents — grab what you need.</p>
+    <div class="courses-grid">
+      <div class="course-card">
+        <div class="ct ct-m">📐<span class="ct-badge">Bestseller</span><span class="ct-play">▶ 24 videos</span></div>
+        <div class="cb">
+          <div class="cb-meta">Mathematics · Grades 8–10</div>
+          <div class="cb-name">Algebra & Geometry — Full Bundle</div>
+          <p class="cb-desc">24 videos covering everything from linear equations to geometric proofs. Super clear, no fluff.</p>
+          <div class="cb-foot"><div class="cb-stats"><strong>24</strong> videos · <strong>8h</strong></div><div class="cb-price">$12</div></div>
+          <a href="video.html?idx=0" class="cb-cta">Watch now →</a>
+        </div>
+      </div>
+      <div class="course-card">
+        <div class="ct ct-s">⚗️<span class="ct-play">▶ 18 videos</span></div>
+        <div class="cb">
+          <div class="cb-meta">Sciences · Grades 9–10</div>
+          <div class="cb-name">Chemistry & Biology — The Basics</div>
+          <p class="cb-desc">18 videos on atoms, molecules, cells, and everything in between. Great for exam cramming.</p>
+          <div class="cb-foot"><div class="cb-stats"><strong>18</strong> videos · <strong>6h</strong></div><div class="cb-price">$9</div></div>
+          <a href="video.html?idx=0" class="cb-cta">Watch now →</a>
+        </div>
+      </div>
+      <div class="course-card">
+        <div class="ct ct-c">💡<span class="ct-play">▶ 20 videos</span></div>
+        <div class="cb">
+          <div class="cb-meta">Computer Science · Grades 7–10</div>
+          <div class="cb-name">Learn Python from Scratch</div>
+          <p class="cb-desc">20 videos going from zero to writing real Python programs. Hands-on and beginner-friendly.</p>
+          <div class="cb-foot"><div class="cb-stats"><strong>20</strong> videos · <strong>7h</strong></div><div class="cb-price">$10</div></div>
+          <a href="video.html?idx=0" class="cb-cta">Watch now →</a>
+        </div>
+      </div>
+      <div class="course-card">
+        <div class="ct ct-f">🇫🇷<span class="ct-badge">New</span><span class="ct-play">▶ 16 videos</span></div>
+        <div class="cb">
+          <div class="cb-meta">French · All levels</div>
+          <div class="cb-name">French for Beginners</div>
+          <p class="cb-desc">16 videos on pronunciation, grammar, and everyday conversation. Go from zero to confident.</p>
+          <div class="cb-foot"><div class="cb-stats"><strong>16</strong> videos · <strong>5h</strong></div><div class="cb-price">$8</div></div>
+          <a href="video.html?idx=0" class="cb-cta">Watch now →</a>
+        </div>
+      </div>
+    </div>
+    <p class="courses-note">All videos are $0.50 each — just buy what you need. Or grab the bundle and save. <a href="#contact">Questions? Ask us.</a></p>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="si">
+    <p class="sec-tag">Pricing</p>
+    <h2>Honestly pretty affordable 💸</h2>
+    <p class="sec-desc">$5/hr for 1-on-1 tutoring. Bundle up and it's even cheaper per session.</p>
+    <div class="pricing-grid">
+      <div class="pc">
+        <div class="pc-lbl">Drop-in</div>
+        <div class="pc-price"><sup>$</sup>5</div>
+        <div class="pc-per">per hour · no commitment</div>
+        <hr class="pc-div" />
+        <ul class="pc-features">
+          <li>1-on-1 with a real tutor</li><li>Any subject</li><li>Pick your time</li><li>Session notes sent after</li>
+        </ul>
+        <a href="#contact" class="pc-cta pc-cta-out">Book a session</a>
+      </div>
+      <div class="pc hot">
+        <div class="pc-lbl">Monthly — 4 classes <span class="pc-badge">Popular</span></div>
+        <div class="pc-price"><sup>$</sup>20</div>
+        <div class="pc-per">per month · 4 sessions ($5/each)</div>
+        <hr class="pc-div" />
+        <ul class="pc-features">
+          <li>Everything in Drop-in</li><li>Priority scheduling</li><li>Progress tracking</li><li>Homework help between sessions</li>
+        </ul>
+        <a href="#contact" class="pc-cta pc-cta-fill">Get started</a>
+      </div>
+      <div class="pc">
+        <div class="pc-lbl">Monthly — 8 classes</div>
+        <div class="pc-price"><sup>$</sup>40</div>
+        <div class="pc-per">per month · 8 sessions ($5/each)</div>
+        <hr class="pc-div" />
+        <ul class="pc-features">
+          <li>Everything in 4-class plan</li><li>Custom study plan</li><li>Progress reports</li><li>Parent updates included</li>
+        </ul>
+        <a href="#contact" class="pc-cta pc-cta-out">Get started</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="si">
+    <div class="contact-layout">
+      <div>
+        <p class="sec-tag">Let's talk</p>
+        <h2>Ready to give it a shot? 🎯</h2>
+        <p class="sec-desc" style="margin-bottom:2.2rem">Fill this out and we'll match you with a tutor in no time. First session is on us.</p>
+        <div class="cp">
+          <div class="cp-icon">📍</div>
+          <div><div class="cp-lbl">Sessions</div><div class="cp-val">Online or in-person &nbsp;<a href="schedule.html">See details →</a></div></div>
+        </div>
+        <div class="cp">
+          <div class="cp-icon">✉️</div>
+          <div><div class="cp-lbl">Email</div><div class="cp-val">hello@smartscope.com</div></div>
+        </div>
+      </div>
+      <form class="main-form" onsubmit="handleSubmit(event)">
+        <div class="fr">
+          <div><label>First name</label><input type="text" id="fname" placeholder="Jane" required /></div>
+          <div><label>Last name</label><input type="text" id="lname" placeholder="Smith" required /></div>
+        </div>
+        <div><label>Email</label><input type="email" id="email" placeholder="jane@email.com" required /></div>
+        <div>
+          <label>Subject</label>
+          <select id="subject">
+            <option value="">What do you need help with?</option>
+            <option>Mathematics</option><option>Physics</option><option>Chemistry</option>
+            <option>Biology</option><option>English / Writing</option><option>Computer Science</option>
+            <option>French</option><option>Something else</option>
+          </select>
+        </div>
+        <div>
+          <label>Grade</label>
+          <select id="level">
+            <option value="">What grade are you in?</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+          </select>
+        </div>
+        <div><label>Anything else?</label><textarea id="message" placeholder="Tell us what you're struggling with, when you're free, etc."></textarea></div>
+        <p class="form-note">🔒 We keep your info private. We'll get back to you within a few hours!</p>
+        <button type="submit" class="form-submit" id="submitBtn">Send it →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Smart<span>Scope</span></div>
+  <div class="footer-links">
+    <a href="#services">Subjects</a><a href="#courses">Courses</a>
+    <a href="#pricing">Pricing</a><a href="#contact">Contact</a>
+  </div>
+  <p>© 2026 SmartScope Tutoring. Built for students, by people who get it.</p>
+</footer>
+
+<script>
+  const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'
+    : 'https://smartscope-tutoring.onrender.com/api';
+
+  const ADMIN_EMAIL = 'admin@smartscope.com';
+  const ADMIN_PASS  = 'Admin2026!';
+  const SUBJECTS = ['Mathematics','Physics','Chemistry','Biology','English / Writing','Computer Science','French'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  // store kept for admin session only; Firebase handles real auth
+  const store = {
+    get user()  { return getCachedUser(); },
+    saveUser(u) { cacheUser(u); },
+    clear()     { clearCache(); },
+  };
+
+  let currentUser = null;
+  let isAdmin = false;
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let pendingDate = null; // date string clicked in calendar
+
+  // ── helpers ──────────────────────────────────────────────────
+  function ini(u) { return ((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase(); }
+
+  function showPill(user) {
+    currentUser = user; store.saveUser(user);
+    document.getElementById('nav-login-btn').parentElement.style.display = 'none';
+    const pill = document.getElementById('nav-user-pill');
+    pill.style.display = 'flex';
+    document.getElementById('pill-av').textContent = isAdmin ? '⚙' : ini(user);
+    document.getElementById('pill-name').textContent = isAdmin ? 'Admin' : user.firstName;
+  }
+  function hidePill() {
+    currentUser = null; isAdmin = false;
+    document.getElementById('nav-user-pill').style.display = 'none';
+    document.getElementById('nav-login-btn').parentElement.style.display = '';
+  }
+
+  async function fetchCount() {
+    // Try Railway stats first, fallback silently
+    try {
+      const r = await fetch(API+'/stats', { signal: AbortSignal.timeout(3000) });
+      if(r.ok){ const d=await r.json(); document.getElementById('hero-count').textContent=d.studentCount; }
+    } catch {}
+  }
+
+  // ── role + tab logic ─────────────────────────────────────────
+  let loginRole = 'student';
+  let signupRole = 'student';
+
+  function setRole(role) {
+    loginRole = role;
+    const badge = document.getElementById('login-role-badge');
+    if (badge) badge.textContent = role==='student' ? '🎓 Student' : '👨‍👩‍👧 Parent';
+    switchTab('login');
+  }
+
+  function setSignupRole(role) {
+    signupRole = role;
+    const gradeWrap = document.getElementById('su-grade-wrap');
+    if (gradeWrap) gradeWrap.style.display = role==='student' ? '' : 'none';
+    const sEl = document.getElementById('su-role-student');
+    const pEl = document.getElementById('su-role-parent');
+    if (sEl) { sEl.style.border = role==='student'?'2px solid var(--accent)':'2px solid var(--border)'; sEl.style.background = role==='student'?'var(--accent-light)':''; }
+    if (pEl) { pEl.style.border = role==='parent'?'2px solid var(--accent)':'2px solid var(--border)'; pEl.style.background = role==='parent'?'var(--accent-light)':''; }
+  }
+
+  function switchTab(t) {
+    ['role','login','signup'].forEach(p => {
+      const el = document.getElementById('panel-'+p);
+      if (el) el.style.display = p===t ? '' : 'none';
+    });
+    // sync tab-bar buttons if visible
+    const tl = document.getElementById('tab-login');
+    const ts = document.getElementById('tab-signup');
+    if (tl) { tl.classList.toggle('active', t==='login'); }
+    if (ts) { ts.classList.toggle('active', t==='signup'); }
+  }
+
+  // ── login ─────────────────────────────────────────────────────
+  function openLogin() {
+    document.getElementById('login-modal').classList.add('open');
+    document.getElementById('login-error').style.display='none';
+    switchTab('role'); // always start at role picker
+  }
+  function closeLogin() { document.getElementById('login-modal').classList.remove('open'); }
+
+
+  async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    const err   = document.getElementById('login-error');
+    const btn   = document.getElementById('login-btn');
+    err.style.display = 'none';
+    if (!email||!pass) { err.textContent='Fill both fields!'; err.style.display='block'; return; }
+    if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+      isAdmin = true; sessionStorage.setItem('ss_admin','1');
+      showPill({firstName:'Admin',lastName:''}); closeLogin(); openAdmin(); return;
+    }
+    btn.textContent = 'Logging in…'; btn.disabled = true;
+    try {
+      const user = await firebaseLogin(email, pass);
+      cacheUser(user); showPill(user); closeLogin(); fetchCount();
+      if (user.role === 'parent') location.href = 'parent.html';
+      else location.href = 'student.html';
+    } catch(e) {
+      const msg = (e.code==='auth/wrong-password'||e.code==='auth/user-not-found'||e.code==='auth/invalid-credential')
+        ? 'Wrong email or password 🤔' : (e.message||'Login failed');
+      err.textContent = msg; err.style.display = 'block';
+    } finally { btn.textContent = "Let's go →"; btn.disabled = false; }
+  }
+
+  async function doSignup() {
+    const firstName = document.getElementById('su-first').value.trim();
+    const lastName  = document.getElementById('su-last').value.trim();
+    const email     = document.getElementById('su-email').value.trim();
+    const password  = document.getElementById('su-pass').value;
+    const grade     = document.getElementById('su-grade').value ? parseInt(document.getElementById('su-grade').value) : null;
+    const err = document.getElementById('signup-error');
+    const btn = document.getElementById('signup-btn');
+    err.style.display = 'none';
+    if (!firstName||!lastName||!email||!password){err.textContent='Fill everything in!';err.style.display='block';return;}
+    if (password.length<8){err.textContent='Password needs at least 8 characters';err.style.display='block';return;}
+    btn.textContent = 'Creating…'; btn.disabled = true;
+    try {
+      const user = await firebaseSignup({ firstName, lastName, email, password, role: signupRole, grade });
+      cacheUser(user); showPill(user); closeLogin(); fetchCount();
+      if (signupRole === 'parent') location.href = 'parent.html';
+      else location.href = 'student.html';
+    } catch(e) {
+      const msg = e.code==='auth/email-already-in-use'
+        ? 'An account with that email already exists.'
+        : (e.message||'Something went wrong');
+      err.textContent = msg; err.style.display = 'block';
+    } finally { btn.textContent = 'Create my account →'; btn.disabled = false; }
+  }
+
+  // ── dashboard routing ─────────────────────────────────────────
+  function goToDashboard() {
+    if (isAdmin) { openAdmin(); return; }
+    const u = getCachedUser();
+    if (!u) { openLogin(); return; }
+    if (u.role==='parent') location.href='parent.html';
+    else location.href='student.html';
+  }
+
+  function openDashboard() { goToDashboard(); }
+  function closeDashboard() {}
+
+  // ── Admin panel ───────────────────────────────────────────────
+  async function openAdmin() {
+    document.getElementById('admin-modal').classList.add('open');
+    await refreshAdminPanel();
+  }
+  function closeAdmin() { document.getElementById('admin-modal').classList.remove('open'); }
+
+  async function refreshAdminPanel() {
+    let students = [];
+    try {
+      const r = await fetch(API+'/admin/students', { headers: { 'x-admin-key': ADMIN_PASS } });
+      if (r.ok) students = (await r.json()).students || [];
+    } catch {}
+
+    document.getElementById('a-students').textContent = students.length;
+    document.getElementById('hero-count').textContent = students.length;
+
+    let totalClasses = 0;
+    students.forEach(s => { totalClasses += (JSON.parse(localStorage.getItem('ss_cal_'+s.id)||'[]')).length; });
+    document.getElementById('a-classes').textContent = totalClasses;
+
+    try {
+      const courses = JSON.parse(localStorage.getItem('ss_courses'))||[];
+      document.getElementById('a-courses').textContent = courses.filter(c=>c.published).length;
+    } catch { document.getElementById('a-courses').textContent = 0; }
+
+    const listEl = document.getElementById('a-student-list');
+    if (students.length) {
+      listEl.innerHTML = students.map(s => {
+        const joined = new Date(s.createdAt).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'});
+        return `<div class="student-row">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0">${(s.firstName?.[0]||'')+(s.lastName?.[0]||'')}</div>
+            <div><div class="student-name">${s.firstName} ${s.lastName}</div><div class="student-meta">${s.email} · Grade ${s.grade||'—'}</div></div>
+          </div>
+          <div class="student-meta">${joined}</div>
+        </div>`;
+      }).join('');
+    } else {
+      listEl.innerHTML = '<div class="empty-state">No students signed up yet!</div>';
+    }
+
+    const opts = '<option value="">Pick student…</option>' + students.map(s=>`<option value="${s.id}">${s.firstName} ${s.lastName} (${s.email})</option>`).join('');
+    document.getElementById('a-stud-sel').innerHTML = opts;
+    document.getElementById('a-grade-stud').innerHTML = opts;
+    renderAdminClassList();
+  }
+
+  function renderAdminClassList() {
+    const uid = document.getElementById('a-stud-sel').value;
+    const el  = document.getElementById('a-class-list');
+    if (!uid) { el.innerHTML=''; return; }
+    const classes = JSON.parse(localStorage.getItem('ss_cal_'+uid)||'[]');
+    el.innerHTML = classes.length ? classes.map((c,i)=>`
+      <div class="class-item">
+        <div class="class-item-info">
+          <div class="ci-name">${c.subject}</div>
+          <div class="ci-meta">${c.date} ${c.time?'at '+c.time:''} · <span style="color:${c.status==='live'?'var(--green)':c.status==='soon'?'var(--yellow)':'var(--mid)'}">${c.status}</span></div>
+        </div>
+        <button class="admin-btn del" onclick="adminDelClass(${i})">Remove</button>
+      </div>`).join('') : '<div class="empty-state">No classes yet.</div>';
+  }
+
+  function loadStudentForAdmin() { renderAdminClassList(); }
+
+  function adminAddClass() {
+    const uid    = document.getElementById('a-stud-sel').value;
+    const subj   = document.getElementById('a-subj').value;
+    const dt     = document.getElementById('a-dt').value;
+    const link   = document.getElementById('a-link').value;
+    const status = document.getElementById('a-status').value;
+    if (!uid) { alert('Pick a student first!'); return; }
+    if (!dt)  { alert('Set a date and time!'); return; }
+    const d = new Date(dt);
+    const dateKey = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    const timeStr = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const classes = JSON.parse(localStorage.getItem('ss_cal_'+uid)||'[]');
+    classes.push({ date:dateKey, subject:subj, time:timeStr, link, status, tutor:'' });
+    localStorage.setItem('ss_cal_'+uid, JSON.stringify(classes));
+    const ok = document.getElementById('a-class-ok');
+    ok.style.display='block'; setTimeout(()=>ok.style.display='none',2500);
+    renderAdminClassList();
+  }
+
+  function adminDelClass(i) {
+    const uid = document.getElementById('a-stud-sel').value;
+    const classes = JSON.parse(localStorage.getItem('ss_cal_'+uid)||'[]');
+    classes.splice(i,1);
+    localStorage.setItem('ss_cal_'+uid, JSON.stringify(classes));
+    renderAdminClassList();
+  }
+
+  function loadGradeInputs() {
+    const uid = document.getElementById('a-grade-stud').value;
+    const el  = document.getElementById('a-grade-inputs');
+    if (!uid) { el.innerHTML=''; return; }
+    const grades = JSON.parse(localStorage.getItem('ss_grades_'+uid)||'{}');
+    el.innerHTML = SUBJECTS.map(s=>`<div class="gi"><label>${s}</label><input type="number" min="1" max="10" placeholder="—" data-subj="${s}" value="${grades[s]||''}" /></div>`).join('');
+  }
+
+  function adminSaveGrades() {
+    const uid = document.getElementById('a-grade-stud').value;
+    if (!uid) { alert('Pick a student!'); return; }
+    const inputs = document.querySelectorAll('#a-grade-inputs input');
+    const grades = {};
+    inputs.forEach(inp => { if(inp.value) grades[inp.dataset.subj] = parseInt(inp.value); });
+    localStorage.setItem('ss_grades_'+uid, JSON.stringify(grades));
+    const ok = document.getElementById('a-grade-ok');
+    ok.style.display='block'; setTimeout(()=>ok.style.display='none',2500);
+  }
+
+  // ── Booking form (contact) ────────────────────────────────────
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Sending…'; btn.disabled = true;
+    const firstName = document.getElementById('fname').value.trim();
+    const lastName  = document.getElementById('lname').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const grade     = document.getElementById('level').value ? parseInt(document.getElementById('level').value) : null;
+    try {
+      const user = await firebaseSignup({ firstName, lastName, email, password:'ChangeMe123!', role:'student', grade });
+      cacheUser(user); showPill(user); fetchCount();
+      btn.textContent = "✓ You're in! We'll be in touch soon 🎉";
+    } catch {
+      btn.textContent = "✓ Request sent! We'll be in touch soon 🎉";
+    }
+    btn.style.background = '#15803D';
+  }
+
+  // ── Session restore via Firebase ──────────────────────────────
+  onAuthReady(async (fbUser) => {
+    fetchCount();
+    if (sessionStorage.getItem('ss_admin')==='1') {
+      isAdmin = true;
+      showPill({firstName:'Admin',lastName:''});
+      return;
+    }
+    if (fbUser) {
+      cacheUser(fbUser);
+      showPill(fbUser);
+    }
+  });
+
+  async function doLogout() {
+    await firebaseLogout();
+    clearCache();
+    sessionStorage.removeItem('ss_admin');
+    hidePill();
+  }
+
+  // ── Backdrop close ────────────────────────────────────────────
+  ['login-modal','dashboard-modal','admin-modal','sched-modal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
+  });
+  document.getElementById('login-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+</script>
+</body>
+</html>
