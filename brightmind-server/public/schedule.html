@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session Details & Schedule — BrightMind</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #FAF7F2; --ink: #1A1510; --warm-mid: #8C7B6E;
+      --accent: #C45E2A; --accent-light: #F5E4D8; --accent-dark: #8B3F1A;
+      --white: #FFFFFF; --border: rgba(26,21,16,0.12);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); font-size: 16px; line-height: 1.7; }
+
+    nav { position: fixed; top: 0; left: 0; width: 100%; z-index: 200; background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 5vw; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+    .nav-logo span { color: var(--accent); }
+    .nav-back { font-size: 0.88rem; font-weight: 500; color: var(--warm-mid); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .nav-back:hover { color: var(--ink); }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; padding: 100px 5vw 5rem; }
+    .page-header { margin-bottom: 3rem; }
+    .page-tag { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.7rem; }
+    h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 0.8rem; }
+    .page-desc { font-size: 1rem; color: var(--warm-mid); max-width: 560px; }
+
+    /* INFO CARDS */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 3.5rem; }
+    .info-card { background: var(--white); border: 1px solid var(--border); border-radius: 18px; padding: 1.4rem 1.5rem; }
+    .info-icon { font-size: 1.4rem; margin-bottom: 0.6rem; }
+    .info-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-mid); margin-bottom: 0.3rem; }
+    .info-val { font-size: 0.95rem; font-weight: 500; }
+    .info-val a { color: var(--accent); text-decoration: none; }
+    .info-val a:hover { text-decoration: underline; }
+
+    /* CALENDAR */
+    .cal-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; }
+    .cal-header { background: var(--ink); padding: 1.4rem 1.8rem; display: flex; align-items: center; justify-content: space-between; }
+    .cal-month { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--cream); font-weight: 700; }
+    .cal-nav { display: flex; gap: 8px; }
+    .cal-nav button { background: rgba(250,247,242,0.1); border: 1px solid rgba(250,247,242,0.2); color: var(--cream); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .cal-nav button:hover { background: rgba(250,247,242,0.2); }
+    .cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--cream); border-bottom: 1px solid var(--border); }
+    .cal-day-name { text-align: center; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--warm-mid); padding: 0.8rem 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-cell { min-height: 90px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 0.5rem; position: relative; }
+    .cal-cell:nth-child(7n) { border-right: none; }
+    .cal-cell.empty { background: rgba(26,21,16,0.02); }
+    .cal-cell.today .day-num { background: var(--accent); color: var(--white); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+    .cal-cell.has-event { background: #FFFAF7; }
+    .day-num { font-size: 0.82rem; font-weight: 500; color: var(--warm-mid); margin-bottom: 4px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+    .cal-event { font-size: 0.7rem; font-weight: 500; border-radius: 6px; padding: 2px 6px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: filter 0.15s; }
+    .cal-event:hover { filter: brightness(0.92); }
+    .ev-online { background: #DBEAFE; color: #1D4ED8; }
+    .ev-inperson { background: #D1FAE5; color: #065F46; }
+    .ev-sat { background: #F3E8FF; color: #6B21A8; }
+
+    /* LEGEND */
+    .legend { display: flex; gap: 1.5rem; padding: 1rem 1.5rem; background: var(--cream); border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.8rem; font-weight: 500; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+    /* EVENT POPUP */
+    .event-popup { display: none; position: fixed; z-index: 300; background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem 1.4rem; box-shadow: 0 16px 40px rgba(26,21,16,0.12); width: 260px; animation: modalIn 0.2s ease; }
+    @keyframes modalIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .event-popup.open { display: block; }
+    .popup-close { float: right; background: none; border: none; cursor: pointer; color: var(--warm-mid); font-size: 1rem; line-height: 1; }
+    .popup-type { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .popup-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .popup-detail { font-size: 0.82rem; color: var(--warm-mid); margin-bottom: 0.2rem; }
+    .popup-book { display: block; margin-top: 0.8rem; background: var(--accent); color: var(--white); text-align: center; padding: 0.5rem; border-radius: 100px; font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+    .popup-book:hover { background: var(--accent-dark); }
+
+    @media (max-width: 640px) {
+      .cal-cell { min-height: 60px; }
+      .cal-event { display: none; }
+      .cal-cell.has-event::after { content: '●'; font-size: 0.5rem; color: var(--accent); display: block; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="tutoring-site.html">Bright<span>Mind</span></a>
+  <a class="nav-back" href="tutoring-site.html">← Back to home</a>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-tag">Session info & scheduling</div>
+    <h1>How sessions work.</h1>
+    <p class="page-desc">Choose what works best for you — join from home or meet your tutor in person. All sessions are 1-on-1 and fully personalized.</p>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-icon">💻</div>
+      <div class="info-label">Online sessions</div>
+      <div class="info-val">Via Zoom or Google Meet. Link sent 30 min before your session. Works on any device.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🏫</div>
+      <div class="info-label">In-person sessions</div>
+      <div class="info-val">Available at our study center:<br><a href="#">123 Learning Lane, Suite 4</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">⏱️</div>
+      <div class="info-label">Session length</div>
+      <div class="info-val">60 or 90 minutes. You choose when booking. Extensions available on request.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🔄</div>
+      <div class="info-label">Rescheduling</div>
+      <div class="info-val">Cancel or reschedule up to 24 hours before your session at no charge.</div>
+    </div>
+  </div>
+
+  <div class="cal-wrap">
+    <div class="cal-header">
+      <div class="cal-month" id="cal-month-label">May 2026</div>
+      <div class="cal-nav">
+        <button onclick="changeMonth(-1)">‹</button>
+        <button onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="cal-days-header">
+      <div class="cal-day-name">Sun</div>
+      <div class="cal-day-name">Mon</div>
+      <div class="cal-day-name">Tue</div>
+      <div class="cal-day-name">Wed</div>
+      <div class="cal-day-name">Thu</div>
+      <div class="cal-day-name">Fri</div>
+      <div class="cal-day-name">Sat</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#BFDBFE"></div>Online session</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#A7F3D0"></div>In-person session</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#E9D5FF"></div>SAT Prep</div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENT POPUP -->
+<div class="event-popup" id="event-popup">
+  <button class="popup-close" onclick="closePopup()">✕</button>
+  <div class="popup-type" id="popup-type"></div>
+  <div class="popup-name" id="popup-name"></div>
+  <div class="popup-detail" id="popup-time"></div>
+  <div class="popup-detail" id="popup-mode"></div>
+  <div class="popup-detail" id="popup-tutor"></div>
+  <a href="tutoring-site.html#contact" class="popup-book">Book this slot →</a>
+</div>
+
+<script>
+  // seed events keyed by "YYYY-M-D"
+  const EVENTS = {
+    "2026-4-23": [
+      { name: "Mathematics", time: "10:00 AM", mode: "Online", tutor: "Mr. Peterson", cls: "ev-online" },
+      { name: "Chemistry", time: "2:00 PM", mode: "In-person", tutor: "Dr. Kim", cls: "ev-inperson" }
+    ],
+    "2026-4-24": [
+      { name: "SAT Prep", time: "11:00 AM", mode: "Online", tutor: "Ms. Torres", cls: "ev-sat" }
+    ],
+    "2026-4-25": [
+      { name: "Computer Science", time: "3:00 PM", mode: "Online", tutor: "Mr. Osei", cls: "ev-online" },
+      { name: "French", time: "5:00 PM", mode: "In-person", tutor: "Mme. Leclerc", cls: "ev-inperson" }
+    ],
+    "2026-4-28": [
+      { name: "Mathematics", time: "9:00 AM", mode: "In-person", tutor: "Mr. Peterson", cls: "ev-inperson" },
+      { name: "SAT Prep", time: "1:00 PM", mode: "Online", tutor: "Ms. Torres", cls: "ev-sat" }
+    ],
+    "2026-4-29": [
+      { name: "Biology", time: "10:00 AM", mode: "Online", tutor: "Dr. Nguyen", cls: "ev-online" }
+    ],
+    "2026-4-30": [
+      { name: "English / Writing", time: "2:30 PM", mode: "In-person", tutor: "Ms. Adkins", cls: "ev-inperson" }
+    ],
+    "2026-5-1": [
+      { name: "Mathematics", time: "10:00 AM", mode: "Online", tutor: "Mr. Peterson", cls: "ev-online" }
+    ],
+    "2026-5-5": [
+      { name: "SAT Prep", time: "11:00 AM", mode: "Online", tutor: "Ms. Torres", cls: "ev-sat" },
+      { name: "Chemistry", time: "4:00 PM", mode: "In-person", tutor: "Dr. Kim", cls: "ev-inperson" }
+    ],
+    "2026-5-7": [
+      { name: "French", time: "3:00 PM", mode: "In-person", tutor: "Mme. Leclerc", cls: "ev-inperson" }
+    ],
+    "2026-5-12": [
+      { name: "Computer Science", time: "2:00 PM", mode: "Online", tutor: "Mr. Osei", cls: "ev-online" }
+    ],
+    "2026-5-14": [
+      { name: "Mathematics", time: "9:30 AM", mode: "Online", tutor: "Mr. Peterson", cls: "ev-online" },
+      { name: "SAT Prep", time: "1:00 PM", mode: "Online", tutor: "Ms. Torres", cls: "ev-sat" }
+    ],
+    "2026-5-19": [
+      { name: "Biology", time: "11:00 AM", mode: "In-person", tutor: "Dr. Nguyen", cls: "ev-inperson" }
+    ],
+    "2026-5-21": [
+      { name: "English / Writing", time: "3:00 PM", mode: "Online", tutor: "Ms. Adkins", cls: "ev-online" }
+    ],
+    "2026-5-26": [
+      { name: "SAT Prep", time: "10:00 AM", mode: "Online", tutor: "Ms. Torres", cls: "ev-sat" },
+      { name: "French", time: "4:30 PM", mode: "In-person", tutor: "Mme. Leclerc", cls: "ev-inperson" }
+    ],
+    "2026-5-28": [
+      { name: "Mathematics", time: "1:00 PM", mode: "In-person", tutor: "Mr. Peterson", cls: "ev-inperson" }
+    ]
+  };
+
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  let currentYear = 2026, currentMonth = 4; // 0-indexed; 4 = May
+
+  function renderCalendar() {
+    const label = document.getElementById('cal-month-label');
+    const grid = document.getElementById('cal-grid');
+    label.textContent = MONTHS[currentMonth] + ' ' + currentYear;
+    grid.innerHTML = '';
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date();
+
+    // empty cells
+    for (let i = 0; i < firstDay; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell empty';
+      grid.appendChild(cell);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = currentYear + '-' + (currentMonth + 1) + '-' + d;
+      const events = EVENTS[key] || [];
+      const isToday = today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === d;
+
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (events.length ? ' has-event' : '') + (isToday ? ' today' : '');
+
+      const numEl = document.createElement('div');
+      numEl.className = 'day-num';
+      numEl.textContent = d;
+      cell.appendChild(numEl);
+
+      events.forEach((ev, idx) => {
+        const evEl = document.createElement('div');
+        evEl.className = 'cal-event ' + ev.cls;
+        evEl.textContent = ev.name;
+        evEl.onclick = (e) => showPopup(e, ev);
+        cell.appendChild(evEl);
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function changeMonth(dir) {
+    currentMonth += dir;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+    renderCalendar();
+  }
+
+  function showPopup(e, ev) {
+    e.stopPropagation();
+    const popup = document.getElementById('event-popup');
+    document.getElementById('popup-type').textContent = ev.cls === 'ev-online' ? '🔵 Online session' : ev.cls === 'ev-sat' ? '🟣 SAT Prep' : '🟢 In-person session';
+    document.getElementById('popup-name').textContent = ev.name;
+    document.getElementById('popup-time').textContent = '⏰ ' + ev.time;
+    document.getElementById('popup-mode').textContent = ev.cls === 'ev-inperson' ? '📍 123 Learning Lane, Suite 4' : '💻 Zoom / Google Meet';
+    document.getElementById('popup-tutor').textContent = '👤 ' + ev.tutor;
+    popup.classList.add('open');
+    // position near click
+    const x = Math.min(e.clientX + 10, window.innerWidth - 280);
+    const y = Math.min(e.clientY + 10, window.innerHeight - 200);
+    popup.style.left = x + 'px';
+    popup.style.top = y + 'px';
+  }
+  function closePopup() { document.getElementById('event-popup').classList.remove('open'); }
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('event-popup').contains(e.target)) closePopup();
+  });
+
+  renderCalendar();
+</script>
+</body>
+</html>
