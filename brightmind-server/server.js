@@ -38,6 +38,11 @@ function requireAuth(req, res, next) {
   }
 }
 
+// Redirect root to main site
+app.get('/', (req, res) => {
+  res.redirect('/tutoring-site.html');
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
