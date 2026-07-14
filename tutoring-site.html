@@ -333,20 +333,93 @@
     <!-- ROLE PICKER -->
     <div id="panel-role">
       <div class="modal-title">Welcome! 👋</div>
-      <div class="modal-sub" style="margin-bottom:1.4rem">Are you a student or a parent?</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.2rem">
-        <div onclick="setRole('student')" style="border:2px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-size:2rem;margin-bottom:0.4rem">🎓</div>
-          <div style="font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800">I'm a Student</div>
-          <div style="font-size:0.72rem;color:var(--mid);margin-top:2px">Classes, homework, courses</div>
+      <div class="modal-sub" style="margin-bottom:1.4rem">Who are you logging in as?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:0.8rem">
+        <div onclick="setRole('student')" style="border:2px solid var(--border);border-radius:14px;padding:1.1rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:1.8rem;margin-bottom:0.3rem">🎓</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:800">I'm a Student</div>
+          <div style="font-size:0.7rem;color:var(--mid);margin-top:2px">Classes, homework, courses</div>
         </div>
-        <div onclick="setRole('parent')" style="border:2px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-size:2rem;margin-bottom:0.4rem">👨‍👩‍👧</div>
-          <div style="font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:800">I'm a Parent</div>
+        <div onclick="setRole('parent')" style="border:2px solid var(--border);border-radius:14px;padding:1.1rem;text-align:center;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:1.8rem;margin-bottom:0.3rem">👨‍👩‍👧</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:800">I'm a Parent</div>
           <div style="font-size:0.72rem;color:var(--mid);margin-top:2px">Track progress, buy courses</div>
         </div>
       </div>
+      <div onclick="setRole('teacher')" style="border:2px solid var(--border);border-radius:14px;padding:0.85rem 1.1rem;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:1rem;display:flex;align-items:center;gap:0.9rem" onmouseover="this.style.borderColor='#7C3AED'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:1.5rem">👨‍🏫</div>
+        <div style="text-align:left">
+          <div style="font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:800">I'm a Teacher</div>
+          <div style="font-size:0.7rem;color:var(--mid)">Sign in or apply for a teacher account</div>
+        </div>
+      </div>
       <div class="modal-note">New here? <a href="#" onclick="switchTab('signup');return false;">Create an account</a></div>
+    </div>
+
+    <!-- GOD PANEL (Ctrl+Shift+Alt+K) -->
+    <div id="panel-god" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+        <a href="#" onclick="switchTab('role');return false;" style="font-size:0.8rem;color:var(--mid);text-decoration:none">← Back</a>
+        <span style="background:#EF444422;color:var(--red);border:1px solid #EF444444;font-size:0.68rem;font-weight:800;padding:2px 8px;border-radius:100px">GOD ACCESS</span>
+      </div>
+      <div class="modal-title" style="color:#EF4444">God Panel ⚡</div>
+      <div class="modal-sub" style="margin-bottom:1.2rem">Approve or reject teacher applications. Create admin accounts.</div>
+      <div id="god-login-section">
+        <div class="modal-field"><label>God email</label><input type="email" id="god-email" placeholder="god@smartscope.com"/></div>
+        <div class="modal-field"><label>God password</label><input type="password" id="god-pass" placeholder="••••••••"/></div>
+        <div class="modal-error" id="god-error" style="display:none"></div>
+        <button class="modal-btn" style="background:#EF4444" onclick="doGodLogin()">Authenticate →</button>
+      </div>
+      <div id="god-panel-content" style="display:none">
+        <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);margin-bottom:0.8rem">PENDING TEACHER APPLICATIONS</div>
+        <div id="pending-apps-list" style="max-height:280px;overflow-y:auto"></div>
+        <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+          <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);margin-bottom:0.8rem">CREATE ADMIN ACCOUNT</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
+            <input type="text" id="new-admin-first" placeholder="First name" style="padding:0.5rem 0.7rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-dark,#0D1117);color:#E6EDF3;font-size:0.85rem;outline:none"/>
+            <input type="text" id="new-admin-last"  placeholder="Last name"  style="padding:0.5rem 0.7rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-dark,#0D1117);color:#E6EDF3;font-size:0.85rem;outline:none"/>
+          </div>
+          <input type="email"    id="new-admin-email" placeholder="Email" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-dark,#0D1117);color:#E6EDF3;font-size:0.85rem;outline:none;margin-bottom:0.6rem"/>
+          <input type="password" id="new-admin-pass"  placeholder="Password (min 8 chars)" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-dark,#0D1117);color:#E6EDF3;font-size:0.85rem;outline:none;margin-bottom:0.6rem"/>
+          <select id="new-admin-role" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-dark,#0D1117);color:#E6EDF3;font-size:0.85rem;outline:none;margin-bottom:0.8rem">
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button class="modal-btn" style="background:#7C3AED;margin-top:0" onclick="createAdminAccount()">Create account →</button>
+          <div id="create-admin-msg" style="font-size:0.8rem;margin-top:0.5rem;display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHER LOGIN/SIGNUP -->
+    <div id="panel-teacher" style="display:none">
+      <div style="margin-bottom:1rem"><a href="#" onclick="switchTab('role');return false;" style="font-size:0.8rem;color:var(--mid);text-decoration:none">← Back</a></div>
+      <div class="modal-title">Teacher Access 👨‍🏫</div>
+      <div class="tabs" style="margin-bottom:1rem">
+        <button class="tab active" id="t-tab-login"  onclick="switchTeacherTab('login')">Sign in</button>
+        <button class="tab"        id="t-tab-apply"  onclick="switchTeacherTab('apply')">Apply</button>
+      </div>
+      <div id="teacher-login-panel">
+        <div class="modal-field"><label>Email</label><input type="email"    id="teacher-email" placeholder="you@email.com"/></div>
+        <div class="modal-field"><label>Password</label><input type="password" id="teacher-pass" placeholder="••••••••"/></div>
+        <div class="modal-error" id="teacher-error" style="display:none"></div>
+        <button class="modal-btn" style="background:#7C3AED" onclick="doTeacherLogin()">Sign in →</button>
+      </div>
+      <div id="teacher-apply-panel" style="display:none">
+        <p style="font-size:0.84rem;color:var(--mid);margin-bottom:1rem">Submit an application. The admin will review and approve your account.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem">
+          <div class="modal-field"><label>First name</label><input type="text" id="ta-first" placeholder="Jane"/></div>
+          <div class="modal-field"><label>Last name</label><input type="text" id="ta-last" placeholder="Smith"/></div>
+        </div>
+        <div class="modal-field"><label>Email</label><input type="email" id="ta-email" placeholder="you@email.com"/></div>
+        <div class="modal-field"><label>Subject you teach</label><input type="text" id="ta-subject" placeholder="e.g. Mathematics"/></div>
+        <div class="modal-field"><label>Brief intro</label><textarea id="ta-bio" placeholder="Tell us a bit about your teaching experience..." style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-dark,#0D1117);color:#E6EDF3;font-size:0.88rem;outline:none;resize:vertical;min-height:70px"></textarea></div>
+        <div class="modal-error" id="apply-error" style="display:none"></div>
+        <button class="modal-btn" style="background:#7C3AED" onclick="submitTeacherApp()">Submit application →</button>
+        <div id="apply-success" style="display:none;background:#15803D22;border:1px solid #22C55E44;border-radius:10px;padding:0.8rem;font-size:0.84rem;color:#22C55E;margin-top:0.8rem">
+          ✅ Application submitted! You'll be notified once approved.
+        </div>
+      </div>
     </div>
 
     <div id="panel-login" style="display:none">
@@ -748,7 +821,7 @@
 <script>
   const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000/api'
-    : 'https://smartscope-tutoring.onrender.com/api';
+    : 'https://YOUR-APP-NAME.onrender.com/api';
 
   const ADMIN_EMAIL = 'admin@smartscope.com';
   const ADMIN_PASS  = 'Admin2026!';
@@ -815,15 +888,188 @@
   }
 
   function switchTab(t) {
-    ['role','login','signup'].forEach(p => {
+    ['role','login','signup','god','teacher'].forEach(p => {
       const el = document.getElementById('panel-'+p);
       if (el) el.style.display = p===t ? '' : 'none';
     });
-    // sync tab-bar buttons if visible
     const tl = document.getElementById('tab-login');
     const ts = document.getElementById('tab-signup');
-    if (tl) { tl.classList.toggle('active', t==='login'); }
-    if (ts) { ts.classList.toggle('active', t==='signup'); }
+    if (tl) tl.classList.toggle('active', t==='login');
+    if (ts) ts.classList.toggle('active', t==='signup');
+  }
+
+  // ── Teacher tab switcher ──────────────────────────────────────
+  function switchTeacherTab(tab) {
+    document.getElementById('teacher-login-panel').style.display = tab==='login' ? '' : 'none';
+    document.getElementById('teacher-apply-panel').style.display = tab==='apply' ? '' : 'none';
+    document.getElementById('t-tab-login').classList.toggle('active', tab==='login');
+    document.getElementById('t-tab-apply').classList.toggle('active', tab==='apply');
+  }
+
+  // ── Keyboard shortcut: Ctrl+Shift+Alt+K → God panel ──────────
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.altKey && e.key === 'K') {
+      e.preventDefault();
+      openLogin();
+      setTimeout(() => switchTab('god'), 50);
+    }
+  });
+
+  // ── Teacher login ─────────────────────────────────────────────
+  async function doTeacherLogin() {
+    const email = document.getElementById('teacher-email').value.trim();
+    const pass  = document.getElementById('teacher-pass').value;
+    const err   = document.getElementById('teacher-error');
+    err.style.display = 'none';
+    if (!email || !pass) { err.textContent='Fill both fields!'; err.style.display='block'; return; }
+    try {
+      const user = await firebaseLogin(email, pass);
+      if (user.role !== 'teacher' && user.role !== 'admin' && user.role !== 'god') {
+        err.textContent = 'This account does not have teacher access.';
+        err.style.display = 'block';
+        await firebaseLogout(); return;
+      }
+      cacheUser(user); showPill(user); closeLogin();
+      // Route teacher to admin panel
+      if (user.role === 'god' || user.role === 'admin') openAdmin();
+      else { showPill(user); }
+    } catch(e) {
+      err.textContent = e.message || 'Login failed.';
+      err.style.display = 'block';
+    }
+  }
+
+  // ── Teacher application ───────────────────────────────────────
+  async function submitTeacherApp() {
+    const firstName = document.getElementById('ta-first').value.trim();
+    const lastName  = document.getElementById('ta-last').value.trim();
+    const email     = document.getElementById('ta-email').value.trim();
+    const subject   = document.getElementById('ta-subject').value.trim();
+    const bio       = document.getElementById('ta-bio').value.trim();
+    const err       = document.getElementById('apply-error');
+    err.style.display = 'none';
+    if (!firstName||!lastName||!email||!subject) { err.textContent='Fill all required fields.'; err.style.display='block'; return; }
+
+    try {
+      // Store application in Firestore pending_teachers collection
+      const { getFirestore, collection, addDoc, serverTimestamp } = window.firebaseFirestore || {};
+      const db = getFirestore(firebase.apps[0]);
+      await addDoc(collection(db,'pending_teachers'), {
+        firstName, lastName, email, subject, bio,
+        status: 'pending',
+        appliedAt: serverTimestamp(),
+      });
+      document.getElementById('apply-success').style.display = 'block';
+      document.getElementById('ta-first').value='';
+      document.getElementById('ta-last').value='';
+      document.getElementById('ta-email').value='';
+      document.getElementById('ta-subject').value='';
+      document.getElementById('ta-bio').value='';
+    } catch(e) {
+      err.textContent = 'Could not submit application. Try again.';
+      err.style.display = 'block';
+    }
+  }
+
+  // ── God login ─────────────────────────────────────────────────
+  async function doGodLogin() {
+    const email = document.getElementById('god-email').value.trim();
+    const pass  = document.getElementById('god-pass').value;
+    const err   = document.getElementById('god-error');
+    err.style.display = 'none';
+    try {
+      const user = await firebaseLogin(email, pass);
+      if (user.role !== 'god') {
+        err.textContent = 'This is not the god account.';
+        err.style.display = 'block';
+        await firebaseLogout(); return;
+      }
+      document.getElementById('god-login-section').style.display  = 'none';
+      document.getElementById('god-panel-content').style.display  = '';
+      loadPendingApps();
+    } catch(e) {
+      err.textContent = e.message || 'Authentication failed.';
+      err.style.display = 'block';
+    }
+  }
+
+  // ── Load pending teacher applications ─────────────────────────
+  async function loadPendingApps() {
+    const listEl = document.getElementById('pending-apps-list');
+    listEl.innerHTML = '<div style="font-size:0.82rem;color:var(--mid)">Loading...</div>';
+    try {
+      const { getFirestore, collection, getDocs, query, where } = window.firebaseFirestore || {};
+      const db   = getFirestore(firebase.apps[0]);
+      const q    = query(collection(db,'pending_teachers'), where('status','==','pending'));
+      const snap = await getDocs(q);
+      if (snap.empty) { listEl.innerHTML = '<div style="font-size:0.82rem;color:var(--mid)">No pending applications.</div>'; return; }
+      listEl.innerHTML = '';
+      snap.forEach(doc => {
+        const d  = doc.data();
+        const id = doc.id;
+        const el = document.createElement('div');
+        el.style.cssText = 'background:var(--surface2);border-radius:10px;padding:0.75rem 0.9rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap';
+        el.innerHTML = `
+          <div style="flex:1;min-width:0">
+            <div style="font-size:0.88rem;font-weight:700">${d.firstName} ${d.lastName}</div>
+            <div style="font-size:0.75rem;color:var(--mid)">${d.email} · ${d.subject}</div>
+            ${d.bio?`<div style="font-size:0.75rem;color:var(--mid);margin-top:2px">${d.bio}</div>`:''}
+          </div>
+          <button onclick="approveTeacher('${id}','${d.firstName}','${d.lastName}','${d.email}')" style="background:#22C55E22;color:#22C55E;border:1px solid #22C55E44;padding:0.3rem 0.8rem;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer">Approve</button>
+          <button onclick="rejectTeacher('${id}')" style="background:#EF444422;color:#EF4444;border:1px solid #EF444444;padding:0.3rem 0.8rem;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer">Reject</button>`;
+        listEl.appendChild(el);
+      });
+    } catch(e) {
+      listEl.innerHTML = '<div style="font-size:0.82rem;color:var(--red)">Could not load applications.</div>';
+    }
+  }
+
+  // ── Approve teacher ───────────────────────────────────────────
+  async function approveTeacher(docId, firstName, lastName, email) {
+    const pass = prompt(`Set a temporary password for ${firstName} ${lastName}:`);
+    if (!pass || pass.length < 8) { alert('Password must be at least 8 characters.'); return; }
+    try {
+      // Create Firebase Auth account + Firestore profile via firebase-auth.js
+      await firebaseSignup({ firstName, lastName, email, password: pass, role: 'teacher', grade: null });
+      // Mark application as approved
+      const { getFirestore, doc, updateDoc } = window.firebaseFirestore || {};
+      const db = getFirestore(firebase.apps[0]);
+      await updateDoc(doc(db,'pending_teachers',docId), { status:'approved' });
+      alert(`${firstName} approved! Their temp password is: ${pass}
+Ask them to change it after first login.`);
+      loadPendingApps();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  // ── Reject teacher ────────────────────────────────────────────
+  async function rejectTeacher(docId) {
+    if (!confirm('Reject this application?')) return;
+    const { getFirestore, doc, updateDoc } = window.firebaseFirestore || {};
+    const db = getFirestore(firebase.apps[0]);
+    await updateDoc(doc(db,'pending_teachers',docId), { status:'rejected' });
+    loadPendingApps();
+  }
+
+  // ── Create admin account directly ─────────────────────────────
+  async function createAdminAccount() {
+    const firstName = document.getElementById('new-admin-first').value.trim();
+    const lastName  = document.getElementById('new-admin-last').value.trim();
+    const email     = document.getElementById('new-admin-email').value.trim();
+    const password  = document.getElementById('new-admin-pass').value;
+    const role      = document.getElementById('new-admin-role').value;
+    const msg       = document.getElementById('create-admin-msg');
+    msg.style.display = 'none';
+    if (!firstName||!lastName||!email||!password) { msg.textContent='Fill all fields.'; msg.style.color='var(--red)'; msg.style.display='block'; return; }
+    if (password.length < 8) { msg.textContent='Password min 8 chars.'; msg.style.color='var(--red)'; msg.style.display='block'; return; }
+    try {
+      await firebaseSignup({ firstName, lastName, email, password, role, grade: null });
+      msg.textContent = firstName + ' (' + role + ') created!';
+      msg.style.color = 'var(--green)'; msg.style.display = 'block';
+      document.getElementById('new-admin-first').value='';
+      document.getElementById('new-admin-last').value='';
+      document.getElementById('new-admin-email').value='';
+      document.getElementById('new-admin-pass').value='';
+    } catch(e) { msg.textContent='Error: '+e.message; msg.style.color='var(--red)'; msg.style.display='block'; }
   }
 
   // ── login ─────────────────────────────────────────────────────
