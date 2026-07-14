@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartScopeApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+742d484dd0c5a93be8669bb56a1f3c96e20e5bc4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f1a3220a5fe6f17bdc4981f8d39174b3da289a8")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartScopeApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartScopeApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -5,9 +5,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>SmartScopeApp</AssemblyName>
     <RootNamespace>SmartScopeApp</RootNamespace>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
-    <Platforms>x86;x64</Platforms>
+    <Platforms>x86;x64;AnyCPU</Platforms>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2277.86" />

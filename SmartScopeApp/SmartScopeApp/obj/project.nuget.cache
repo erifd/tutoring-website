@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "R6VkFxOfbD0=",
+  "dgSpecHash": "hxc/j9yLfvw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\family_2\\Documents\\Github\\tutoring-website\\SmartscopeApp\\SmartScopeApp\\SmartScopeApp.csproj",
+  "projectFilePath": "C:\\Users\\family_2\\Documents\\GitHub\\tutoring-website\\SmartScopeApp\\SmartScopeApp\\SmartScopeApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\family_2\\.nuget\\packages\\microsoft.web.webview2\\1.0.2277.86\\microsoft.web.webview2.1.0.2277.86.nupkg.sha512",
     "C:\\Users\\family_2\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.36\\microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
