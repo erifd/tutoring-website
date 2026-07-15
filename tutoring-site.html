@@ -365,8 +365,7 @@
       <div class="modal-title" style="color:#EF4444">God Panel ⚡</div>
       <div class="modal-sub" style="margin-bottom:1.2rem">Approve or reject teacher applications. Create admin accounts.</div>
       <div id="god-login-section">
-        <div class="modal-field"><label>God email</label><input type="email" id="god-email" placeholder="god@smartscope.com"/></div>
-        <div class="modal-field"><label>God password</label><input type="password" id="god-pass" placeholder="••••••••"/></div>
+        <div class="modal-field"><label>God password</label><input type="password" id="god-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doGodLogin()"/></div>
         <div class="modal-error" id="god-error" style="display:none"></div>
         <button class="modal-btn" style="background:#EF4444" onclick="doGodLogin()">Authenticate →</button>
       </div>
@@ -816,6 +815,9 @@
     <a href="#pricing">Pricing</a><a href="#contact">Contact</a>
   </div>
   <p>© 2026 SmartScope Tutoring. Built for students, by people who get it.</p>
+  <p style="margin-top:0.4rem">
+    <a href="#" onclick="openGodPanel();return false;" style="color:var(--mid);opacity:0.1;text-decoration:none;font-size:0.68rem;cursor:default">Terms &amp; Conditions</a>
+  </p>
 </footer>
 
 <script>
@@ -971,24 +973,26 @@
     }
   }
 
-  // ── God login ─────────────────────────────────────────────────
+  // ── God login — password verified server-side (never in GitHub) ─
   async function doGodLogin() {
-    const email = document.getElementById('god-email').value.trim();
-    const pass  = document.getElementById('god-pass').value;
-    const err   = document.getElementById('god-error');
+    const pass = document.getElementById('god-pass').value;
+    const err  = document.getElementById('god-error');
     err.style.display = 'none';
+    if (!pass) { err.textContent='Enter the god password.'; err.style.display='block'; return; }
     try {
-      const user = await firebaseLogin(email, pass);
-      if (user.role !== 'god') {
-        err.textContent = 'This is not the god account.';
-        err.style.display = 'block';
-        await firebaseLogout(); return;
-      }
-      document.getElementById('god-login-section').style.display  = 'none';
-      document.getElementById('god-panel-content').style.display  = '';
+      // Verify against Render env variable — password never stored in any file
+      const r = await fetch(API + '/verify-god', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass })
+      });
+      if (!r.ok) { err.textContent='Wrong password.'; err.style.display='block'; return; }
+      // Unlock panel
+      document.getElementById('god-login-section').style.display = 'none';
+      document.getElementById('god-panel-content').style.display = '';
       loadPendingApps();
     } catch(e) {
-      err.textContent = e.message || 'Authentication failed.';
+      err.textContent = 'Could not reach server. Make sure Render is running.';
       err.style.display = 'block';
     }
   }
@@ -1073,6 +1077,11 @@ Ask them to change it after first login.`);
   }
 
   // ── login ─────────────────────────────────────────────────────
+  function openGodPanel() {
+    openLogin();
+    setTimeout(() => switchTab('god'), 60);
+  }
+
   function openLogin() {
     document.getElementById('login-modal').classList.add('open');
     document.getElementById('login-error').style.display='none';

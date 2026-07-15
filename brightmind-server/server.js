@@ -38,6 +38,16 @@ function requireAuth(req, res, next) {
   }
 }
 
+// ── God password verification ────────────────────────────────
+// GOD_PASSWORD is set as an environment variable on Render — never in code
+app.post('/api/verify-god', (req, res) => {
+  const { password } = req.body || {};
+  const godPass = process.env.GOD_PASSWORD;
+  if (!godPass) return res.status(503).json({ error: 'Not configured.' });
+  if (password === godPass) return res.json({ ok: true });
+  return res.status(401).json({ error: 'Wrong password.' });
+});
+
 // Redirect root to main site
 app.get('/', (req, res) => {
   res.redirect('/tutoring-site.html');
