@@ -872,6 +872,7 @@
 
   function setRole(role) {
     loginRole = role;
+    if (role === 'teacher') { switchTab('teacher'); return; }
     const badge = document.getElementById('login-role-badge');
     if (badge) badge.textContent = role==='student' ? '🎓 Student' : '👨‍👩‍👧 Parent';
     switchTab('login');
@@ -917,11 +918,36 @@
 
   // ── Teacher login ─────────────────────────────────────────────
   async function doTeacherLogin() {
-    const email = document.getElementById('teacher-email').value.trim();
+    const email = document.getElementById('teacher-email').value.trim().toLowerCase();
     const pass  = document.getElementById('teacher-pass').value;
     const err   = document.getElementById('teacher-error');
     err.style.display = 'none';
     if (!email || !pass) { err.textContent='Fill both fields!'; err.style.display='block'; return; }
+
+    // ── God account: verified server-side, never in code ─────
+    if (email === 'god@smartscope.com') {
+      try {
+        const r = await fetch(API + '/verify-god', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pass })
+        });
+        if (!r.ok) { err.textContent='Wrong password.'; err.style.display='block'; return; }
+        // Unlock god panel inside the modal
+        closeLogin();
+        openLogin();
+        switchTab('god');
+        document.getElementById('god-login-section').style.display = 'none';
+        document.getElementById('god-panel-content').style.display = '';
+        loadPendingApps();
+      } catch(e) {
+        err.textContent = 'Could not reach server. Is Render running?';
+        err.style.display = 'block';
+      }
+      return;
+    }
+
+    // ── Regular teacher/admin: Firebase login ─────────────────
     try {
       const user = await firebaseLogin(email, pass);
       if (user.role !== 'teacher' && user.role !== 'admin' && user.role !== 'god') {
@@ -930,9 +956,7 @@
         await firebaseLogout(); return;
       }
       cacheUser(user); showPill(user); closeLogin();
-      // Route teacher to admin panel
-      if (user.role === 'god' || user.role === 'admin') openAdmin();
-      else { showPill(user); }
+      if (user.role === 'admin' || user.role === 'god') openAdmin();
     } catch(e) {
       err.textContent = e.message || 'Login failed.';
       err.style.display = 'block';
